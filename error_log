@@ -1,0 +1,5 @@
+[26-Jun-2025 17:31:33 UTC] PHP Warning:  require(/home/fepqzsdl1mpm/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/fepqzsdl1mpm/public_html/index.php on line 24
+[26-Jun-2025 17:31:33 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/fepqzsdl1mpm/public_html/../vendor/autoload.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/fepqzsdl1mpm/public_html/index.php:24
+Stack trace:
+#0 {main}
+  thrown in /home/fepqzsdl1mpm/public_html/index.php on line 24
