@@ -71,3 +71,55 @@
         </div>
     </div>
 </footer>
+
+<style>
+/* Fix social icon sizes in compact footer - prevent Tailwind CSS conflicts */
+footer .footer-social-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+footer .footer-social-links .nav-link {
+    padding: 0.25rem 0.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+}
+
+/* Force icon wrapper to correct size - override Tailwind and all other styles */
+footer .footer-social-links .nav-link .ion-icon-wrapper,
+footer .footer-social-links .nav-link .ion-icon-wrapper.icon-medium {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    box-sizing: content-box !important;
+}
+
+footer .footer-social-links .nav-link .ion-icon-inner,
+footer .footer-social-links .nav-link .ion-icon-inner svg {
+    width: 24px !important;
+    height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+}
+
+/* Override any Tailwind width/height classes that might affect icons */
+footer .footer-social-links .nav-link .ion-icon-wrapper[class*="w-"],
+footer .footer-social-links .nav-link .ion-icon-wrapper[class*="h-"],
+footer .footer-social-links .nav-link .ion-icon-wrapper[class*="size"] {
+    width: 24px !important;
+    height: 24px !important;
+}
+</style>
