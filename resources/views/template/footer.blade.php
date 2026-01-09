@@ -101,6 +101,11 @@
     overflow: hidden;
 }
 
+/* Prevent Tailwind CSS from overriding footer styles */
+.footer-modern * {
+    box-sizing: border-box;
+}
+
 .footer-modern::before {
     content: '';
     position: absolute;
@@ -155,8 +160,8 @@
 }
 
 .footer-social-links a {
-    width: 44px;
-    height: 44px;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
@@ -166,6 +171,25 @@
     text-decoration: none;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Fix icon sizes inside footer social links - override Tailwind CSS conflicts */
+.footer-social-links a .ion-icon-wrapper {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+}
+
+.footer-social-links a .ion-icon-inner,
+.footer-social-links a .ion-icon-inner svg {
+    width: 24px !important;
+    height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
 }
 
 .footer-social-links a:hover {
@@ -242,6 +266,17 @@
     
     .footer-social-links {
         justify-content: center;
+    }
+    
+    .footer-social-links a {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
+    .footer-social-links a .ion-icon-wrapper {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 24px !important;
     }
     
     .footer-links {
