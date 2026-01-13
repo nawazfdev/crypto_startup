@@ -59,6 +59,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('cryptocurrency', function ($app) {
             return new \App\Services\CryptocurrencyService();
         });
+        
+        // Bind App\User to App\Model\User for backward compatibility
+        // This fixes issues where code references App\User but the model is in App\Model\User
+        if (!class_exists('App\User')) {
+            $this->app->bind('App\User', 'App\Model\User');
+        }
     }
 
     /**

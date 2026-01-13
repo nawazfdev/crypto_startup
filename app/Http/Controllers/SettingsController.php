@@ -17,11 +17,11 @@ use App\Model\Transaction;
 use App\Model\UserDevice;
 use App\Model\UserGender;
 use App\Model\UserVerify;
+use App\Model\User;
 use App\Providers\AttachmentServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\EmailsServiceProvider;
 use App\Providers\GenericHelperServiceProvider;
-use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -93,6 +93,12 @@ class SettingsController extends Controller
         $data = [];
         switch ($request->route('type')) {
             case 'wallet':
+                // Ensure user has a wallet
+                if (!$user->wallet) {
+                    GenericHelperServiceProvider::createUserWallet($user);
+                    $user->refresh(); // Refresh to load the wallet relationship
+                }
+                
                 JavaScript::put([
                     'stripeConfig' => [
                         'stripePublicID' => getSetting('payments.stripe_public_key'),

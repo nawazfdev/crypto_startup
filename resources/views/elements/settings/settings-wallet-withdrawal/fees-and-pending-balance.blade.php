@@ -12,7 +12,7 @@
     <div class="d-flex align-items-center">
         @include('elements.icon',['icon'=>'information-circle-outline','variant'=>'small','centered'=>false,'classes'=>'mr-2'])
         <span class="text-right" id="pending-balance" title="{{__("The payouts are manually and it usually take up to 24 hours for a withdrawal to be processed, we will notify you as soon as your request is processed.")}}">
-            {{__('Pending balance')}} (<b class="wallet-pending-amount">{{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount(number_format(Auth::user()->wallet->pendingBalance, 2, '.', ''))}}</b>)
+            {{__('Pending balance')}} (<b class="wallet-pending-amount">{{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount(number_format(Auth::user()->wallet ? Auth::user()->wallet->pendingBalance : 0, 2, '.', ''))}}</b>)
         </span>
     </div>
 </div>

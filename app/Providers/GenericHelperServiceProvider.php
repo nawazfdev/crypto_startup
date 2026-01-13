@@ -49,15 +49,156 @@ class GenericHelperServiceProvider extends ServiceProvider
      */
     public static function isUserVerified()
     {
+        if (!Auth::check()) {
+            return false;
+        }
+        
+        // Get user and ensure it's the App\Model\User instance
+        $user = Auth::user();
+        
+        // If it's not App\Model\User, reload it as App\Model\User
+        if (!($user instanceof \App\Model\User)) {
+            $user = \App\Model\User::find($user->id);
+            if (!$user) {
+                return false;
+            }
+        }
+        
+        // Refresh verification relationship to get latest status from database
+        try {
+            $user->unsetRelation('verification');
+            $user->load('verification');
+        } catch (\Exception $e) {
+            // If relationship doesn't exist, try to get it directly
+            $user->setRelation('verification', \App\Model\UserVerify::where('user_id', $user->id)->first());
+        }
+        
         if (
-            (Auth::user()->verification && Auth::user()->verification->status == 'verified') &&
-            Auth::user()->birthdate &&
-            Auth::user()->email_verified_at
+            ($user->verification && $user->verification->status == 'verified') &&
+            $user->birthdate &&
+            $user->email_verified_at
         ) {
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * Check if user is 18+ years old.
+     *
+     * @return bool
+     */
+    public static function isUser18Plus()
+    {
+        if (!Auth::user()->birthdate) {
+            return false;
+        }
+        
+        $birthdate = \Carbon\Carbon::parse(Auth::user()->birthdate);
+        $age = $birthdate->age;
+        
+        return $age >= 18;
+    }
+
+    /**
+     * Check if user has linked bank account (Stripe Connect).
+     *
+     * @return bool
+     */
+    public static function hasBankAccountLinked()
+    {
+        if (!Auth::check()) {
+            return false;
+        }
+        
+        // Get user and ensure it's the App\Model\User instance
+        $user = Auth::user();
+        if (!($user instanceof \App\Model\User)) {
+            $user = \App\Model\User::find($user->id);
+            if (!$user) {
+                return false;
+            }
+        }
+        
+        if (!$user->stripe_account_id) {
+            return false;
+        }
+        
+        // Check if Stripe onboarding is complete
+        try {
+            return \App\Providers\WithdrawalsServiceProvider::userDoneStripeOnboarding($user);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if user has ID verification completed.
+     *
+     * @return bool
+     */
+    public static function hasIDVerification()
+    {
+        if (!Auth::check()) {
+            return false;
+        }
+        
+        // Get user and ensure it's the App\Model\User instance
+        $user = Auth::user();
+        
+        // If it's not App\Model\User, reload it as App\Model\User
+        if (!($user instanceof \App\Model\User)) {
+            $user = \App\Model\User::find($user->id);
+            if (!$user) {
+                return false;
+            }
+        }
+        
+        // Refresh verification relationship to get latest status from database
+        try {
+            $user->unsetRelation('verification');
+            $user->load('verification');
+        } catch (\Exception $e) {
+            // If relationship doesn't exist, try to get it directly
+            $user->setRelation('verification', \App\Model\UserVerify::where('user_id', $user->id)->first());
+        }
+        
+        return $user->verification && 
+               $user->verification->status == 'verified';
+    }
+
+    /**
+     * Check if user can post content (meets all requirements).
+     * Returns array with 'can_post' boolean and 'errors' array.
+     *
+     * @return array
+     */
+    public static function canUserPost()
+    {
+        $errors = [];
+        
+        // Check 18+ requirement
+        if (!self::isUser18Plus()) {
+            $errors[] = __('You must be 18 years or older to post content.');
+        }
+        
+        // Check ID verification
+        if (!self::hasIDVerification()) {
+            $errors[] = __('You must complete ID verification to post content.');
+        }
+        
+        // Check bank account linking (only if Stripe Connect withdrawals are enabled)
+        // If Stripe Connect is not enabled, users can post without linking a bank account
+        $stripeConnectEnabled = getSetting('payments.withdrawal_enable_stripe_connect', false);
+        if ($stripeConnectEnabled && !self::hasBankAccountLinked()) {
+            $errors[] = __('You must link a bank account to post content.');
+        }
+        
+        return [
+            'can_post' => empty($errors),
+            'errors' => $errors
+        ];
     }
 
     /**

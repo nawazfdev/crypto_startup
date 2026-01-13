@@ -236,22 +236,28 @@ class AttachmentServiceProvider extends ServiceProvider
                     
                     // Create thumbnail
                     if($attachmentType == 'image'){
-                        $imgManager = new ImageManager(new Driver());
-                        $image = $imgManager->read($file);
-                        
-                        // Process for thumbnails dir
-                        if(!$image->width() || !$image->height()){
-                            // Skip thumbnail creation if we can't detect dimensions
-                            \Log::warning("AttachmentServiceProvider - Could not detect image dimensions");
-                        } else {
-                            // Regular thumbnail
-                            self::createThumbnail($storage, $image, $thumbnailDir.'/'.$encryptedName, 500, 800);
+                        try {
+                            // Use Intervention Image v2 (legacy) since that's what's installed
+                            $image = Image::make($file);
                             
-                            // 150x150 thumbnail
-                            self::createThumbnail($storage, $image, $thumbnail150Dir.'/'.$encryptedName, 150, 150);
+                            // Process for thumbnails dir
+                            if(!$image->width() || !$image->height()){
+                                // Skip thumbnail creation if we can't detect dimensions
+                                \Log::warning("AttachmentServiceProvider - Could not detect image dimensions");
+                            } else {
+                                // Regular thumbnail
+                                self::createThumbnail($storage, $image, $thumbnailDir.'/'.$encryptedName, 500, 800);
+                                
+                                // 150x150 thumbnail
+                                self::createThumbnail($storage, $image, $thumbnail150Dir.'/'.$encryptedName, 150, 150);
+                            }
+                            $hasThumbnail = true;
+                            $thumbnailPath = $thumbnailDir.'/'.$encryptedName;
+                        } catch (\Exception $e) {
+                            \Log::error('AttachmentServiceProvider - Image processing error: ' . $e->getMessage());
+                            $hasThumbnail = false;
+                            $thumbnailPath = null;
                         }
-                        $hasThumbnail = true;
-                        $thumbnailPath = $thumbnailDir.'/'.$encryptedName;
                         
                     } elseif($attachmentType == 'video' && self::shouldProcessVideo()){
                         // For videos, set placeholder thumbnail initially
@@ -267,13 +273,16 @@ class AttachmentServiceProvider extends ServiceProvider
 
             // Create attachment
             $attachment = new Attachment();
+            // Generate UUID for attachment ID (required since auto-increment is disabled)
+            $attachment->id = Uuid::uuid4()->toString();
             $attachment->user_id = Auth::user() ? Auth::user()->id : null;
             $attachment->filename = $fileName;
             $attachment->file_size = $file->getSize();
             $attachment->mime_type = $file->getMimeType();
             $attachment->type = self::getActualAttachmentType($file->getMimeType());
             $attachment->has_thumbnail = $generateThumbnail ? (isset($hasThumbnail) ? $hasThumbnail : false) : false;
-            $attachment->thumbnail_path = isset($thumbnailPath) ? $thumbnailPath : null;
+            // Note: thumbnail_path is not stored in DB - it's calculated dynamically via Attachment::getThumbnailAttribute()
+            $attachment->driver = self::getStorageProviderID(getSetting('storage.driver'));
             $attachment->save();
             
             \Log::info('AttachmentServiceProvider - Attachment created successfully', [
@@ -651,5 +660,70 @@ POLICY;
             return $matches[0];
         }
         return false;
+    }
+
+    /**
+     * Generate encrypted/unique filename for attachment.
+     * 
+     * @param \Illuminate\Http\UploadedFile $file
+     * @return string
+     */
+    public static function generateAttachmentEncryptedFileName($file)
+    {
+        $extension = $file->getClientOriginalExtension();
+        $uniqueId = Uuid::uuid4()->toString();
+        $timestamp = time();
+        
+        // Generate a secure filename: timestamp_uuid.extension
+        return $timestamp . '_' . str_replace('-', '', $uniqueId) . '.' . $extension;
+    }
+
+    /**
+     * Get actual attachment type from mime type.
+     * 
+     * @param string $mimeType
+     * @return string
+     */
+    public static function getActualAttachmentType($mimeType)
+    {
+        return self::getAttachmentType($mimeType);
+    }
+
+    /**
+     * Create thumbnail for image.
+     * 
+     * @param \Illuminate\Contracts\Filesystem\Filesystem $storage
+     * @param mixed $image Intervention Image instance
+     * @param string $path
+     * @param int $width
+     * @param int $height
+     * @return void
+     */
+    private static function createThumbnail($storage, $image, $path, $width, $height)
+    {
+        try {
+            // Resize image maintaining aspect ratio
+            $image->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            
+            // Encode and save
+            $thumbnailData = (string) $image->encode('jpg', 85);
+            $storage->put($path, $thumbnailData, 'public');
+        } catch (\Exception $e) {
+            \Log::error('Thumbnail creation failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Check if video should be processed.
+     * 
+     * @return bool
+     */
+    private static function shouldProcessVideo()
+    {
+        return getSetting('media.transcoding_driver') === 'ffmpeg' || 
+               getSetting('media.transcoding_driver') === 'coconut';
     }
 }

@@ -15,38 +15,103 @@
 @endif
 
 @section('styles')
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * {
             font-family: 'Inter', sans-serif;
         }
+        .auth-page-container {
+            min-height: 100vh;
+            background: linear-gradient(to bottom right, #000000, #1a1a1a, #000000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .auth-logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .auth-logo-section img {
+            height: 48px;
+            margin: 0 auto 16px;
+            display: block;
+        }
+        .auth-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        .auth-subtitle {
+            color: #9ca3af;
+        }
+        .auth-footer-links {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .auth-footer-links p {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        .auth-footer-links a {
+            color: #830866;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .auth-footer-links a:hover {
+            color: #a10a7f;
+        }
+        input::placeholder {
+            color: #9ca3af !important;
+            opacity: 1;
+        }
+        input::-webkit-input-placeholder {
+            color: #9ca3af !important;
+        }
+        input::-moz-placeholder {
+            color: #9ca3af !important;
+            opacity: 1;
+        }
+        input:-ms-input-placeholder {
+            color: #9ca3af !important;
+        }
     </style>
 @stop
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4 py-8">
-    <div class="w-full max-w-md">
+<div class="auth-page-container">
+    <div style="width: 100%; max-width: 450px;">
         <!-- Logo/Brand -->
-        <div class="text-center mb-8">
-            <a href="{{route('home')}}" class="inline-block">
-                <img class="h-12 mx-auto mb-4" src="{{asset( (Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo')) : (Cookie::get('app_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo'))) )}}">
+        <div class="auth-logo-section">
+            <a href="{{route('home')}}" style="display: inline-block;">
+                <img src="{{asset( (Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo')) : (Cookie::get('app_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo'))) )}}" alt="Logo">
             </a>
-            <h1 class="text-3xl font-bold text-white mb-2">Create Account</h1>
-            <p class="text-gray-400">Join us and start creating amazing content</p>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join us and start creating amazing content</p>
         </div>
 
         <!-- Register Card -->
-        <div class="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
+        <div class="auth-card">
             @include('auth.register-form')
             @include('auth.social-login-box')
         </div>
 
         <!-- Footer Links -->
-        <div class="text-center mt-6">
-            <p class="text-gray-400 text-sm">
+        <div class="auth-footer-links">
+            <p>
                 Already have an account? 
-                <a href="{{route('login')}}" class="text-pink-500 hover:text-pink-400 font-semibold transition-colors">Sign in</a>
+                <a href="{{route('login')}}">Sign in</a>
             </p>
         </div>
     </div>

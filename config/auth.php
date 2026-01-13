@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => TCG\Voyager\Models\User::class,
+            'model' => App\Model\User::class,
         ],
 
         // 'users' => [

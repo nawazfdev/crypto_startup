@@ -1,9 +1,9 @@
-<form method="POST" action="{{ route('register') }}" id="register-form" class="space-y-5">
+<form method="POST" action="{{ route('register') }}" id="register-form" style="margin-bottom: 24px;">
     @csrf
 
     @if($errors->any())
-        <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm">
-            <ul class="list-disc list-inside">
+        <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #fecaca; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;">
+            <ul style="list-style: disc; list-style-position: inside; margin: 0; padding: 0;">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -11,8 +11,8 @@
         </div>
     @endif
 
-    <div>
-        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="name" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Full Name') }}
         </label>
         <input 
@@ -23,16 +23,18 @@
             autocomplete="name" 
             autofocus
             required
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Enter your full name"
         >
         @error('name')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
     
-    <div>
-        <label for="username" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="username" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Username') }}
         </label>
         <input 
@@ -42,16 +44,18 @@
             value="{{ old('username') }}" 
             required 
             autocomplete="username"
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Choose a username"
         >
         @error('username')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div>
-        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="email" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Email Address') }}
         </label>
         <input 
@@ -61,16 +65,18 @@
             value="{{ old('email') }}" 
             required 
             autocomplete="email"
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Enter your email"
         >
         @error('email')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div>
-        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="password" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Password') }}
         </label>
         <input 
@@ -79,16 +85,18 @@
             name="password" 
             required 
             autocomplete="new-password"
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Create a password"
         >
         @error('password')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div>
-        <label for="password-confirm" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="password-confirm" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Confirm Password') }}
         </label>
         <input 
@@ -97,45 +105,51 @@
             name="password_confirmation" 
             required 
             autocomplete="new-password"
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Confirm your password"
         >
         @error('password_confirmation')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div class="flex items-start">
-        <div class="flex items-center h-5">
+    <div style="display: flex; align-items: flex-start; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; height: 20px; margin-right: 12px; margin-top: 2px;">
             <input 
                 id="tosAgree" 
                 name="terms" 
                 type="checkbox" 
                 value="1" 
                 required
-                class="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-300 rounded"
+                style="width: 16px; height: 16px; cursor: pointer;"
             >
         </div>
-        <label for="tosAgree" class="ml-3 text-sm text-gray-300">
-            <span>{{ __('I agree to the') }} <a href="{{route('pages.get',['slug'=>GenericHelper::getTOSPage()->slug])}}" class="text-pink-500 hover:text-pink-400">{{ __('Terms of Use') }}</a> {{ __('and') }} <a href="{{route('pages.get',['slug'=>GenericHelper::getPrivacyPage()->slug])}}" class="text-pink-500 hover:text-pink-400">{{ __('Privacy Policy') }}</a>.</span>
+        <label for="tosAgree" style="font-size: 14px; color: #d1d5db; line-height: 1.5; cursor: pointer;">
+            <span>{{ __('I agree to the') }} <a href="{{route('pages.get',['slug'=>GenericHelper::getTOSPage()->slug])}}" style="color: #830866; text-decoration: none;">{{ __('Terms of Use') }}</a> {{ __('and') }} <a href="{{route('pages.get',['slug'=>GenericHelper::getPrivacyPage()->slug])}}" style="color: #830866; text-decoration: none;">{{ __('Privacy Policy') }}</a>.</span>
         </label>
         @error('terms')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
     @if(getSetting('security.recaptcha_enabled') && !Auth::check())
-        <div class="flex justify-center">
+        <div style="display: flex; justify-content: center; margin-bottom: 24px;">
             {!! NoCaptcha::display(['data-theme' => (Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme')) : Cookie::get('app_theme') )]) !!}
             @error('g-recaptcha-response')
-                <p class="mt-1 text-sm text-red-400">{{__("Please check the captcha field.")}}</p>
+                <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{__("Please check the captcha field.")}}</p>
             @enderror
         </div>
     @endif
 
     <button 
         type="submit" 
-        class="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-pink-500/30 mt-6"
+        style="width: 100%; background: linear-gradient(135deg, #830866 0%, #a10a7f 100%); color: #ffffff; font-weight: 600; padding: 12px 16px; border-radius: 12px; border: none; font-size: 14px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(131, 8, 102, 0.3); margin-top: 24px;"
+        onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 20px rgba(131, 8, 102, 0.4)';"
+        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(131, 8, 102, 0.3)';"
+        onmousedown="this.style.transform='scale(0.98)';"
+        onmouseup="this.style.transform='scale(1.02)';"
     >
         {{ __('Create Account') }}
     </button>

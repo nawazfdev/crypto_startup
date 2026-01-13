@@ -1,15 +1,15 @@
-<form method="POST" action="{{ route('login') }}" class="space-y-6">
+<form method="POST" action="{{ route('login') }}" style="margin-bottom: 24px;">
     @csrf
     
     @if(session('message'))
-        <div class="bg-pink-500/20 border border-pink-500/50 text-pink-200 px-4 py-3 rounded-lg text-sm">
+        <div style="background: rgba(236, 72, 153, 0.2); border: 1px solid rgba(236, 72, 153, 0.5); color: #fbcfe8; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;">
             {{ session('message') }}
         </div>
     @endif
 
     @if($errors->any())
-        <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm">
-            <ul class="list-disc list-inside">
+        <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #fecaca; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;">
+            <ul style="list-style: disc; list-style-position: inside; margin: 0; padding: 0;">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -17,8 +17,8 @@
         </div>
     @endif
 
-    <div>
-        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="email" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Email Address') }}
         </label>
         <input 
@@ -29,16 +29,19 @@
             autocomplete="email" 
             autofocus
             required
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Enter your email"
+            oninput="this.style.color='#ffffff';"
         >
         @error('email')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div>
-        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+    <div style="margin-bottom: 20px;">
+        <label for="password" style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">
             {{ __('Password') }}
         </label>
         <input 
@@ -47,29 +50,31 @@
             name="password" 
             autocomplete="current-password"
             required
-            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;"
+            onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
+            onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
             placeholder="Enter your password"
         >
         @error('password')
-            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
         @enderror
     </div>
 
-    <div class="flex items-center justify-between">
-        <div class="flex items-center">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center;">
             <input 
                 id="remember" 
                 name="remember" 
                 type="checkbox" 
-                class="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-300 rounded"
+                style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;"
             >
-            <label for="remember" class="ml-2 block text-sm text-gray-300">
+            <label for="remember" style="display: block; font-size: 14px; color: #d1d5db; margin: 0; cursor: pointer;">
                 {{ __('Remember me') }}
             </label>
         </div>
         @if (Route::has('password.request'))
-            <div class="text-sm">
-                <a href="{{ route('password.request') }}" class="text-pink-500 hover:text-pink-400 font-medium transition-colors">
+            <div style="font-size: 14px;">
+                <a href="{{ route('password.request') }}" style="color: #830866; font-weight: 500; text-decoration: none;">
                     {{ __('Forgot Password?') }}
                 </a>
             </div>
@@ -78,7 +83,11 @@
 
     <button 
         type="submit" 
-        class="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-pink-500/30"
+        style="width: 100%; background: linear-gradient(135deg, #830866 0%, #a10a7f 100%); color: #ffffff; font-weight: 600; padding: 12px 16px; border-radius: 12px; border: none; font-size: 14px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(131, 8, 102, 0.3);"
+        onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 20px rgba(131, 8, 102, 0.4)';"
+        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(131, 8, 102, 0.3)';"
+        onmousedown="this.style.transform='scale(0.98)';"
+        onmouseup="this.style.transform='scale(1.02)';"
     >
         {{ __('Sign In') }}
     </button>

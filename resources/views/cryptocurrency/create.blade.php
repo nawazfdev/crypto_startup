@@ -1,11 +1,15 @@
 @extends('layouts.generic')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@endpush
+
 @section('content')
 <div class="container py-4">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-5 fw-bold text-primary">🚀 Create New Token</h1>
+            <h1 class="display-5 fw-bold text-primary"><i class="fas fa-rocket me-2"></i>Create New Token</h1>
             <p class="lead text-muted">Launch your own cryptocurrency token on the blockchain</p>
         </div>
     </div>
@@ -45,7 +49,7 @@
                 <!-- Basic Information -->
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">📝 Basic Information</h5>
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Basic Information</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
@@ -75,15 +79,33 @@
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Token Logo</label>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="logo-preview-container">
-                                        <img id="logoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%23f8f9fa'/%3E%3Ctext x='30' y='38' text-anchor='middle' font-size='24'%3E🪙%3C/text%3E%3C/svg%3E" 
-                                             alt="Logo Preview" class="logo-preview">
+                                <label class="form-label fw-semibold">Token Logo <span class="text-muted">(Optional)</span></label>
+                                <div class="logo-upload-area" id="logoUploadArea">
+                                    <input type="file" name="logo" id="logoInput" class="d-none" accept="image/*">
+                                    <div class="logo-upload-content">
+                                        <div class="logo-preview-wrapper">
+                                            <div id="logoPreviewPlaceholder" class="logo-preview-placeholder">
+                                                <i class="fas fa-coins"></i>
+                                            </div>
+                                            <img id="logoPreview" src="" alt="Logo Preview" class="logo-preview d-none">
+                                            <div class="logo-overlay d-none" id="logoOverlay">
+                                                <i class="fas fa-camera"></i>
+                                            </div>
+                                        </div>
+                                        <div class="logo-upload-info">
+                                            <button type="button" class="btn btn-sm btn-outline-primary logo-upload-btn" onclick="document.getElementById('logoInput').click()">
+                                                <i class="fas fa-upload me-1"></i>Upload Logo
+                                            </button>
+                                            <small class="d-block mt-2 text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>Max 2MB, JPG/PNG/GIF/SVG
+                                            </small>
+                                            <small class="d-block mt-1 text-muted logo-file-name" id="logoFileName"></small>
+                                        </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <input type="file" name="logo" id="logoInput" class="form-control" accept="image/*">
-                                        <small class="text-muted">Max 2MB, JPG/PNG/GIF/SVG</small>
+                                    <div class="logo-drop-zone">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p class="mb-0">Drag & drop your logo here</p>
+                                        <small>or click to browse</small>
                                     </div>
                                 </div>
                             </div>
@@ -105,7 +127,7 @@
                 <!-- Token Configuration -->
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">⚙️ Token Configuration</h5>
+                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Token Configuration</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
@@ -137,7 +159,7 @@
                 <!-- Supply & Economics -->
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">💰 Supply & Economics</h5>
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Supply & Economics</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
@@ -178,7 +200,7 @@
                 <!-- Fee Structure -->
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0">💸 Fee Structure</h5>
+                        <h5 class="mb-0"><i class="fas fa-percent me-2"></i>Fee Structure</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
@@ -212,7 +234,7 @@
                 <!-- Token Features -->
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">🔧 Token Features</h5>
+                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Token Features</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
@@ -221,7 +243,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" name="enable_burning" value="1" id="burning" class="form-check-input" style="width: 20px; height: 20px;">
                                         <label class="form-check-label fw-semibold" for="burning">
-                                            🔥 Token Burning
+                                            <i class="fas fa-fire me-2"></i>Token Burning
                                         </label>
                                     </div>
                                     <small class="text-muted d-block mt-1">Allow permanent token destruction</small>
@@ -232,7 +254,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" name="enable_minting" value="1" id="minting" class="form-check-input" style="width: 20px; height: 20px;">
                                         <label class="form-check-label fw-semibold" for="minting">
-                                            ⚒️ Token Minting
+                                            <i class="fas fa-hammer me-2"></i>Token Minting
                                         </label>
                                     </div>
                                     <small class="text-muted d-block mt-1">Allow new token creation</small>
@@ -243,7 +265,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" name="transferable" value="1" id="transfers" class="form-check-input" style="width: 20px; height: 20px;" checked>
                                         <label class="form-check-label fw-semibold" for="transfers">
-                                            🔄 Allow Transfers
+                                            <i class="fas fa-exchange-alt me-2"></i>Allow Transfers
                                         </label>
                                     </div>
                                     <small class="text-muted d-block mt-1">Enable token transfers</small>
@@ -266,9 +288,9 @@
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg py-3">
                                 <span id="submitSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
-                                🚀 CREATE TOKEN
+                                <i class="fas fa-rocket me-2"></i>CREATE TOKEN
                             </button>
-                            <a href="{{ route('cryptocurrency.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <a href="{{ route('cryptocurrency.index') }}" class="btn btn-outline-secondary"><i class="fas fa-times me-2"></i>Cancel</a>
                         </div>
                     </div>
                 </div>
@@ -281,7 +303,7 @@
             <!-- Token Limit -->
             <div class="card mb-4 border-0 shadow-sm">
                 <div class="card-header bg-light">
-                    <h6 class="mb-0">🎯 Token Limit</h6>
+                    <h6 class="mb-0"><i class="fas fa-bullseye me-2"></i>Token Limit</h6>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
@@ -299,7 +321,7 @@
             <!-- Summary -->
             <div class="card mb-4 border-0 shadow-sm">
                 <div class="card-header bg-light">
-                    <h6 class="mb-0">📊 Summary</h6>
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Summary</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-2 text-center">
@@ -334,18 +356,18 @@
             <!-- Info -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light">
-                    <h6 class="mb-0">💡 Information</h6>
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Information</h6>
                 </div>
                 <div class="card-body">
                     <p class="small mb-2">After creating your token:</p>
                     <ul class="small mb-3 ps-3">
-                        <li>List on marketplace</li>
-                        <li>Build community</li>
-                        <li>Track performance</li>
-                        <li>Manage economics</li>
+                        <li><i class="fas fa-store me-1"></i>List on marketplace</li>
+                        <li><i class="fas fa-users me-1"></i>Build community</li>
+                        <li><i class="fas fa-chart-line me-1"></i>Track performance</li>
+                        <li><i class="fas fa-wallet me-1"></i>Manage economics</li>
                     </ul>
                     <div class="alert alert-info small p-2 mb-0">
-                        <strong>💡 Tip:</strong> Clear description attracts more users!
+                        <strong><i class="fas fa-lightbulb me-1"></i>Tip:</strong> Clear description attracts more users!
                     </div>
                 </div>
             </div>
@@ -354,69 +376,455 @@
 </div>
 
 <style>
-.logo-preview-container {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+/* Logo Upload Area - Modern Design */
+.logo-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 16px;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
     overflow: hidden;
-    border: 2px solid #dee2e6;
-    background: #f8f9fa;
+}
+
+.logo-upload-area:hover {
+    border-color: #830866;
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(131, 8, 102, 0.1);
+}
+
+.logo-upload-area.drag-over {
+    border-color: #830866;
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+    transform: scale(1.02);
+}
+
+.logo-upload-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.logo-preview-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid #e5e7eb;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f3f4f6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.logo-upload-area:hover .logo-preview-wrapper {
+    border-color: #830866;
+    box-shadow: 0 4px 16px rgba(131, 8, 102, 0.2);
+    transform: scale(1.05);
+}
+
+.logo-preview-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: #830866;
+    transition: all 0.3s ease;
+}
+
+.logo-upload-area:hover .logo-preview-placeholder {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .logo-preview {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.logo-preview:hover {
-    transform: scale(1.1);
-}
-
-.feature-option {
     transition: all 0.3s ease;
-    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-.feature-option:hover {
-    border-color: #0d6efd !important;
-    background-color: #f8f9ff;
+.logo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(131, 8, 102, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.feature-option.selected {
-    border-color: #0d6efd !important;
-    background-color: #f8f9ff;
+.logo-preview-wrapper:hover .logo-overlay {
+    opacity: 1;
 }
 
-.card {
-    border-radius: 12px;
+.logo-upload-info {
+    flex: 1;
 }
 
-.btn-primary {
-    background: linear-gradient(45deg, #0d6efd, #6610f2);
-    border: none;
+.logo-upload-btn {
+    border-radius: 10px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.logo-upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(131, 8, 102, 0.2);
+}
+
+.logo-file-name {
+    color: #830866 !important;
     font-weight: 600;
 }
 
+.logo-drop-zone {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.logo-drop-zone i {
+    font-size: 48px;
+    color: #830866;
+    margin-bottom: 1rem;
+    display: block;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.logo-upload-area.drag-over .logo-upload-content {
+    display: none;
+}
+
+.logo-upload-area.drag-over .logo-drop-zone {
+    display: block;
+}
+
+.logo-upload-area.has-logo {
+    border-color: #830866;
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.logo-overlay {
+    cursor: pointer;
+}
+
+.logo-overlay i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Feature Options - Enhanced */
+.feature-option {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(131, 8, 102, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.feature-option:hover::before {
+    left: 100%;
+}
+
+.feature-option:hover {
+    border-color: #830866 !important;
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(131, 8, 102, 0.15);
+}
+
+.feature-option.selected {
+    border-color: #830866 !important;
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+    box-shadow: 0 4px 16px rgba(131, 8, 102, 0.2);
+}
+
+.feature-option .form-check-input {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.feature-option:hover .form-check-input {
+    border-color: #830866;
+}
+
+.feature-option .form-check-input:checked {
+    background-color: #830866;
+    border-color: #830866;
+}
+
+.feature-option .form-check-label {
+    font-weight: 600;
+    color: #1f2937;
+    transition: color 0.3s ease;
+}
+
+.feature-option:hover .form-check-label {
+    color: #830866;
+}
+
+.feature-option i {
+    transition: transform 0.3s ease;
+}
+
+.feature-option:hover i {
+    transform: scale(1.2);
+}
+
+/* Card Enhancements */
+.card {
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(131, 8, 102, 0.1);
+}
+
+.card-header {
+    border-radius: 16px 16px 0 0 !important;
+}
+
+/* Button Enhancements */
+.btn-primary {
+    background: linear-gradient(135deg, #830866 0%, #a10a7f 100%);
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(131, 8, 102, 0.3);
+}
+
 .btn-primary:hover {
-    background: linear-gradient(45deg, #0b5ed7, #5a0dcf);
+    background: linear-gradient(135deg, #6a0652 0%, #830866 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(131, 8, 102, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-outline-primary {
+    border-color: #830866;
+    color: #830866;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: #830866;
+    border-color: #830866;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(131, 8, 102, 0.2);
+}
+
+/* Form Controls - Enhanced */
+.form-control:focus, .form-select:focus {
+    border-color: #830866;
+    box-shadow: 0 0 0 4px rgba(131, 8, 102, 0.1);
     transform: translateY(-1px);
 }
 
-.form-control:focus, .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+.form-control, .form-select {
+    transition: all 0.3s ease;
 }
 
+.form-control:hover:not(:disabled):not(:focus), .form-select:hover:not(:disabled):not(:focus) {
+    border-color: #adb5bd;
+}
+
+/* Progress Bar */
 .progress {
-    height: 8px;
-    border-radius: 4px;
+    height: 10px;
+    border-radius: 8px;
+    background-color: #e9ecef;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.progress-bar {
+    background: linear-gradient(90deg, #830866 0%, #a10a7f 100%);
+    transition: width 0.6s ease;
+}
+
+/* Input Group */
 .input-group-text {
     min-width: 45px;
     justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f3f4f6 100%);
+    border-color: #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.input-group:focus-within .input-group-text {
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+    border-color: #830866;
+    color: #830866;
+}
+
+/* Summary Cards */
+.summary-card .bg-light {
+    transition: all 0.3s ease;
+}
+
+.summary-card .bg-light:hover {
+    background: linear-gradient(135deg, rgba(131, 8, 102, 0.05) 0%, rgba(255, 255, 255, 1) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(131, 8, 102, 0.1);
+}
+
+/* Input Validation Feedback */
+.form-control.is-valid {
+    border-color: #10b981;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    padding-right: calc(1.5em + 0.75rem);
+}
+
+.form-control.is-invalid {
+    border-color: #ef4444;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 1.4 1.4m0 1.4-1.4 1.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    padding-right: calc(1.5em + 0.75rem);
+}
+
+/* Label Enhancements */
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-label .text-danger {
+    color: #ef4444;
+    font-size: 0.875em;
+}
+
+/* Character Count Enhancement */
+#charCount {
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+#charCount.text-success {
+    color: #10b981;
+}
+
+#charCount.text-warning {
+    color: #f59e0b;
+}
+
+#charCount.text-danger {
+    color: #ef4444;
+}
+
+/* Smooth Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.card:nth-child(1) { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.card:nth-child(3) { animation-delay: 0.3s; }
+.card:nth-child(4) { animation-delay: 0.4s; }
+.card:nth-child(5) { animation-delay: 0.5s; }
+
+/* Loading State */
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Tooltip Enhancement */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Summary Numbers Animation */
+.summary-card .h6 {
+    transition: all 0.3s ease;
+    font-weight: 800;
+}
+
+.summary-card .h6:hover {
+    transform: scale(1.1);
+    color: #830866;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .logo-upload-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .logo-preview-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .logo-preview-placeholder {
+        font-size: 32px;
+    }
 }
 </style>
 
@@ -440,15 +848,107 @@ document.addEventListener('DOMContentLoaded', function() {
     const summaryAvailable = document.getElementById('summaryAvailable');
     const summaryTotal = document.getElementById('summaryTotal');
     
-    // Logo preview
-    logoInput.addEventListener('change', function() {
-        const file = this.files[0];
+    // Logo upload area elements
+    const logoUploadArea = document.getElementById('logoUploadArea');
+    const logoPreviewPlaceholder = document.getElementById('logoPreviewPlaceholder');
+    const logoOverlay = document.getElementById('logoOverlay');
+    const logoFileName = document.getElementById('logoFileName');
+    
+    // Logo preview functionality
+    function handleLogoPreview(file) {
         if (file) {
+            // Validate file size (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('File size must be less than 2MB');
+                logoInput.value = '';
+                return;
+            }
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a valid image file (JPG, PNG, GIF, or SVG)');
+                logoInput.value = '';
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 logoPreview.src = e.target.result;
+                logoPreview.classList.remove('d-none');
+                logoOverlay.classList.remove('d-none');
+                if (logoPreviewPlaceholder) {
+                    logoPreviewPlaceholder.style.display = 'none';
+                }
+                if (logoFileName) {
+                    logoFileName.textContent = file.name;
+                    logoFileName.style.display = 'block';
+                }
+                logoUploadArea.classList.add('has-logo');
             };
             reader.readAsDataURL(file);
+        } else {
+            logoPreview.classList.add('d-none');
+            logoOverlay.classList.add('d-none');
+            if (logoPreviewPlaceholder) {
+                logoPreviewPlaceholder.style.display = 'flex';
+            }
+            if (logoFileName) {
+                logoFileName.style.display = 'none';
+            }
+            logoUploadArea.classList.remove('has-logo');
+        }
+    }
+    
+    // File input change
+    logoInput.addEventListener('change', function() {
+        handleLogoPreview(this.files[0]);
+    });
+    
+    // Click to upload
+    logoUploadArea.addEventListener('click', function(e) {
+        if (!e.target.closest('.logo-overlay') && !e.target.closest('.logo-upload-btn')) {
+            logoInput.click();
+        }
+    });
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        logoUploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        logoUploadArea.addEventListener(eventName, function() {
+            logoUploadArea.classList.add('drag-over');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        logoUploadArea.addEventListener(eventName, function() {
+            logoUploadArea.classList.remove('drag-over');
+        }, false);
+    });
+    
+    logoUploadArea.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            logoInput.files = files;
+            handleLogoPreview(files[0]);
+        }
+    }, false);
+    
+    // Remove logo functionality
+    logoOverlay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('Remove logo?')) {
+            logoInput.value = '';
+            handleLogoPreview(null);
         }
     });
     
@@ -457,11 +957,44 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     });
     
-    // Character count
+    // Character count with validation
     descriptionInput.addEventListener('input', function() {
         const length = this.value.length;
         charCount.textContent = length + '/2000';
-        charCount.className = length < 50 ? 'text-danger' : length > 1800 ? 'text-warning' : 'text-success';
+        if (length < 50) {
+            charCount.className = 'text-danger';
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        } else if (length > 1800) {
+            charCount.className = 'text-warning';
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            charCount.className = 'text-success';
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Real-time validation for required fields
+    const requiredInputs = document.querySelectorAll('input[required], textarea[required], select[required]');
+    requiredInputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
     });
     
     // Calculate values
@@ -502,14 +1035,51 @@ document.addEventListener('DOMContentLoaded', function() {
         option.classList.toggle('selected', checkbox.checked);
     });
     
-    // Form submission
-    form.addEventListener('submit', function() {
+    // Form submission with enhanced feedback
+    form.addEventListener('submit', function(e) {
+        // Validate description length
+        const descLength = descriptionInput.value.length;
+        if (descLength < 50) {
+            e.preventDefault();
+            alert('Description must be at least 50 characters long.');
+            descriptionInput.focus();
+            return false;
+        }
+        
         const submitBtn = form.querySelector('button[type="submit"]');
         const spinner = document.getElementById('submitSpinner');
         submitBtn.disabled = true;
         spinner.classList.remove('d-none');
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Token...';
+        
+        // Animate button
+        submitBtn.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            submitBtn.style.transform = '';
+        }, 100);
+        
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span><i class="fas fa-rocket me-2"></i>Creating Token...';
+        
+        // Add pulsing effect
+        submitBtn.style.animation = 'pulse 1.5s infinite';
     });
+    
+    // Add smooth scroll to errors
+    if (document.querySelector('.alert-danger')) {
+        setTimeout(() => {
+            document.querySelector('.alert-danger').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }, 300);
+    }
+    
+    // Add tooltips if Bootstrap tooltips are available
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
     
     // Initialize
     updateCalculations();

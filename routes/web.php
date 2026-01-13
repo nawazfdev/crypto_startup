@@ -417,8 +417,17 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin.user']], funct
     ])->name('voyager.public-pages.update-privacy');
     
     // Load Voyager routes AFTER your custom routes
-    Voyager::routes();
+    // User verification routes (must be before Voyager::routes())
+    Route::get('user-verifies/{id}/verify', [
+        App\Http\Controllers\Voyager\UserVerifiesController::class, 'verify'
+    ])->name('voyager.user-verifies.verify');
     
+    Route::put('user-verifies/{id}/update-status', [
+        App\Http\Controllers\Voyager\UserVerifiesController::class, 'updateStatus'
+    ])->name('voyager.user-verifies.update-status');
+
+    Voyager::routes();
+
     // Your existing routes...
     Route::get('/metrics/new/users/value', [App\Http\Controllers\MetricsController::class, 'newUsersValue'])->name('admin.metrics.new.users.value');
     Route::get('/metrics/new/users/trend', [App\Http\Controllers\MetricsController::class, 'newUsersTrend'])->name('admin.metrics.new.users.trend');

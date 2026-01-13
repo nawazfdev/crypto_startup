@@ -81,30 +81,45 @@ class LoginController extends Controller
         $provider = $request->route('provider');
 
         try {
-            $user = Socialite::driver($provider)->user();
+            $socialUser = Socialite::driver($provider)->user();
         } catch (RequestException $e) {
-            throw new \ErrorException($e->getMessage());
+            return redirect(route('login'))->with('error', __('Social login failed. Please try again.'));
+        } catch (\Exception $e) {
+            return redirect(route('login'))->with('error', __('Social login failed. Please try again.'));
         }
 
-        // Creating the user & Logging in the user
-        $userCheck = User::where('auth_provider_id', $user->id)->first();
+        // Check if user exists by provider ID
+        $userCheck = User::where('auth_provider_id', $socialUser->id)
+            ->where('auth_provider', $provider)
+            ->first();
+            
         if($userCheck){
             $authUser = $userCheck;
-        }
-        else{
-            try {
-                $authUser = AuthServiceProvider::createUser([
-                    'name' => $user->getName(),
-                    'email' => $user->getEmail(),
+        } else {
+            // Check if user exists by email (link accounts)
+            $existingUser = User::where('email', $socialUser->getEmail())->first();
+            
+            if($existingUser) {
+                // Link social account to existing user
+                $existingUser->update([
                     'auth_provider' => $provider,
-                    'auth_provider_id' => $user->id,
+                    'auth_provider_id' => $socialUser->id,
                 ]);
+                $authUser = $existingUser;
+            } else {
+                // Create new user
+                try {
+                    $authUser = AuthServiceProvider::createUser([
+                        'name' => $socialUser->getName() ?: $socialUser->getNickname() ?: 'User',
+                        'email' => $socialUser->getEmail(),
+                        'auth_provider' => $provider,
+                        'auth_provider_id' => $socialUser->id,
+                        'email_verified_at' => now(), // Social logins are pre-verified
+                    ]);
+                } catch (\Exception $exception) {
+                    return redirect(route('login'))->with('error', $exception->getMessage() ?: __('Failed to create account. Please try again.'));
+                }
             }
-            catch (\Exception $exception) {
-                // Redirect to homepage with error
-                return redirect(route('home'))->with('error', $exception->getMessage());
-            }
-
         }
 
         Auth::login($authUser, true);
@@ -112,7 +127,6 @@ class LoginController extends Controller
         if (Session::has('lastProfileUrl')) {
             $redirectTo = Session::get('lastProfileUrl');
         }
-        return redirect($redirectTo);
-
+        return redirect($redirectTo)->with('success', __('Welcome! You have been logged in successfully.'));
     }
 }

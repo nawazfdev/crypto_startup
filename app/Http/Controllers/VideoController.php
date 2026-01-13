@@ -57,6 +57,13 @@ class VideoController extends Controller
             return redirect()->route('login')->with('message', 'Please login or signup to create videos.');
         }
         
+        // Check all posting requirements (18+, ID verification, bank account)
+        $postingCheck = \App\Providers\GenericHelperServiceProvider::canUserPost();
+        if (!$postingCheck['can_post']) {
+            return redirect()->route('my.settings', ['type' => 'verify'])
+                ->with('error', implode(' ', $postingCheck['errors']));
+        }
+        
         return view('videos.create');
     }
 
@@ -68,6 +75,12 @@ class VideoController extends Controller
 public function store(Request $request)
 {
     try {
+        // Check all posting requirements (18+, ID verification, bank account)
+        $postingCheck = \App\Providers\GenericHelperServiceProvider::canUserPost();
+        if (!$postingCheck['can_post']) {
+            return back()->withErrors(['error' => implode(' ', $postingCheck['errors'])])->withInput();
+        }
+
         // Validation
         $request->validate([
             'title' => 'required|string|max:191',

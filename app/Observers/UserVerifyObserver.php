@@ -19,6 +19,14 @@ class UserVerifyObserver
      */
     public function saving(UserVerify $userVerify)
     {
+        // Refresh user's verification relationship cache when status changes
+        if ($userVerify->isDirty('status')) {
+            $user = \App\Model\User::find($userVerify->user_id);
+            if ($user) {
+                $user->unsetRelation('verification');
+            }
+        }
+        
         if ($userVerify->getOriginal('status') == 'pending' && $userVerify->status != 'pending') {
             if ($userVerify->status == 'rejected') {
                 // Reject
@@ -27,7 +35,7 @@ class UserVerifyObserver
                     'text' => __('Try again'),
                     'url' => route('my.settings', ['type'=>'verify']),
                 ];
-            } elseif ($userVerify->status = 'verified') {
+            } elseif ($userVerify->status == 'verified') {
                 // Check ok
                 $emailSubject = __('Your identity check passed.');
                 $button = [
@@ -53,6 +61,9 @@ class UserVerifyObserver
                     'button' => $button,
                 ]
             );
+            
+            // Clear user's verification relationship cache after status change
+            $user->unsetRelation('verification');
         }
 
         // Deleting files

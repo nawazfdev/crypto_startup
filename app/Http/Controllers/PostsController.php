@@ -109,6 +109,26 @@ class PostsController extends Controller
      */
     public function create()
     {
+        // Ensure we're using App\Model\User instance, not TCG\Voyager\Models\User
+        if (Auth::check()) {
+            $authUser = Auth::user();
+            // If it's not App\Model\User, reload it
+            if (!($authUser instanceof \App\Model\User)) {
+                $authUser = \App\Model\User::find($authUser->id);
+                if ($authUser) {
+                    // Re-authenticate with the correct model
+                    Auth::login($authUser);
+                }
+            }
+        }
+        
+        // Check all posting requirements (18+, ID verification, bank account)
+        $postingCheck = GenericHelperServiceProvider::canUserPost();
+        if (!$postingCheck['can_post']) {
+            return redirect()->route('my.settings', ['type' => 'verify'])
+                ->with('error', implode(' ', $postingCheck['errors']));
+        }
+
         $canPost = true;
         if(getSetting('site.enforce_user_identity_checks')){
             if(!GenericHelperServiceProvider::isUserVerified()){
@@ -172,6 +192,29 @@ class PostsController extends Controller
     public function savePost(SavePostRequest $request)
     {
         try {
+            // Ensure we're using App\Model\User instance, not TCG\Voyager\Models\User
+            if (Auth::check()) {
+                $authUser = Auth::user();
+                // If it's not App\Model\User, reload it
+                if (!($authUser instanceof \App\Model\User)) {
+                    $authUser = \App\Model\User::find($authUser->id);
+                    if ($authUser) {
+                        // Re-authenticate with the correct model
+                        Auth::login($authUser);
+                    }
+                }
+            }
+            
+            // Check all posting requirements (18+, ID verification, bank account)
+            $postingCheck = GenericHelperServiceProvider::canUserPost();
+            if (!$postingCheck['can_post']) {
+                return response()->json([
+                    'success' => false, 
+                    'errors' => ['permissions' => implode(' ', $postingCheck['errors'])]
+                ], 403);
+            }
+
+            // Legacy check (keep for backward compatibility)
             if (!GenericHelperServiceProvider::isUserVerified() && getSetting('site.enforce_user_identity_checks')) {
                 return response()->json(['success' => false, 'errors' => ['permissions' => __('User not verified. Can not post content.')]], 500);
             }

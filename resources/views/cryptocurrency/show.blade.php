@@ -1,257 +1,285 @@
 @extends('layouts.generic')
 
 @section('content')
-<div class="container py-4">
-    <!-- Token Header - MOVED TO TOP -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
+<div class="crypto-detail-page">
+    <div class="container-fluid px-4 py-4">
+        <!-- Modern Hero Header -->
+        <div class="crypto-hero-section mb-4">
+            <div class="crypto-hero-card">
+                <div class="crypto-hero-gradient"></div>
+                <div class="crypto-hero-content">
                     <div class="row align-items-center">
                         <div class="col-auto">
-                            <div class="token-logo">
+                            <div class="crypto-logo-wrapper">
                                 @if($cryptocurrency->logo && Storage::disk('public')->exists($cryptocurrency->logo))
                                     <img src="{{ asset('storage/' . $cryptocurrency->logo) }}" 
                                          alt="{{ $cryptocurrency->name }} Logo" 
-                                         class="rounded-circle token-logo-img" 
-                                         width="80" height="80">
+                                         class="crypto-logo-img">
                                 @else
-                                    <div class="token-logo-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                         style="width: 60px; height: 60px; font-size: 2rem; font-weight: bold;">
+                                    <div class="crypto-logo-placeholder">
                                         {{ substr($cryptocurrency->symbol, 0, 2) }}
+                                    </div>
+                                @endif
+                                @if($cryptocurrency->is_verified)
+                                    <div class="crypto-verified-badge">
+                                        <i class="fas fa-check-circle"></i>
                                     </div>
                                 @endif
                             </div>
                         </div>
                         <div class="col">
-                            <h1 class="h2 mb-1">{{ $cryptocurrency->name }} 
-                                <span class="badge bg-secondary fs-6">{{ $cryptocurrency->symbol }}</span>
-                            </h1>
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <span class="h4 mb-0 fw-bold">${{ number_format($cryptocurrency->current_price, 8) }}</span>
+                            <div class="crypto-title-section">
+                                <h1 class="crypto-name">{{ $cryptocurrency->name }}</h1>
+                                <div class="crypto-symbol-badge">{{ $cryptocurrency->symbol }}</div>
+                            </div>
+                            <div class="crypto-price-section">
+                                <div class="crypto-current-price">${{ number_format($cryptocurrency->current_price, 8) }}</div>
                                 @php
                                     $change = $cryptocurrency->change_24h ?? 0;
                                 @endphp
-                                <span class="badge fs-6 {{ $change >= 0 ? 'bg-success' : 'bg-danger' }}">
+                                <div class="crypto-price-change {{ $change >= 0 ? 'positive' : 'negative' }}">
+                                    <i class="fas fa-{{ $change >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                                     {{ $change >= 0 ? '+' : '' }}{{ number_format($change, 2) }}%
-                                </span>
-                                @if($cryptocurrency->is_verified)
-                                    <span class="badge bg-primary fs-6">✓ Verified</span>
-                                @endif
+                                    <span class="change-label">24h</span>
+                                </div>
                             </div>
-                            <div class="d-flex gap-3 flex-wrap align-items-center">
+                            <div class="crypto-action-buttons">
                                 <a href="{{ route('cryptocurrency.buy.form', $cryptocurrency->id) }}" 
-                                   class="btn btn-success px-4 py-2 fw-bold">
-                                    <i class="fas fa-arrow-up me-2"></i>BUY
+                                   class="crypto-btn crypto-btn-buy">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Buy</span>
                                 </a>
                                 @if($wallet && $wallet->balance > 0)
                                     <a href="{{ route('cryptocurrency.sell.form', $cryptocurrency->id) }}" 
-                                       class="btn btn-danger px-4 py-2 fw-bold">
-                                        <i class="fas fa-arrow-down me-2"></i>SELL
+                                       class="crypto-btn crypto-btn-sell">
+                                        <i class="fas fa-arrow-down"></i>
+                                        <span>Sell</span>
                                     </a>
                                 @endif
-                                <!-- <button class="btn btn-outline-secondary px-3 py-2" onclick="toggleWatchlist()">
-                                    <i class="fas fa-star me-2"></i>WATCHLIST
-                                </button>
-                                @if(Auth::id() == $cryptocurrency->creator_user_id)
-                                    <a href="#" class="btn btn-outline-warning px-3 py-2">
-                                        <i class="fas fa-edit me-2"></i>EDIT
-                                    </a>
-                                @endif -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Your Wallet (if user has balance) - MOVED UP -->
-    @if($wallet && $wallet->balance > 0)
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm wallet-gradient">
-                <div class="card-header border-0 text-white wallet-header">
-                    <h5 class="mb-0">🏦 Your Wallet</h5>
+        <!-- Modern Wallet Section -->
+        @if($wallet && $wallet->balance > 0)
+        <div class="crypto-wallet-section mb-4">
+            <div class="crypto-wallet-card">
+                <div class="crypto-wallet-header">
+                    <i class="fas fa-wallet"></i>
+                    <span>Your Portfolio</span>
                 </div>
-                <div class="card-body text-white">
-                    <div class="row g-3 text-center">
-                        <div class="col-md-4">
-                            <div class="p-3 wallet-stat-card rounded">
-                                <h4 class="mb-1 fw-bold text-white">{{ number_format($wallet->balance, 8) }}</h4>
-                                <small class="wallet-label">{{ $cryptocurrency->symbol }} Balance</small>
-                            </div>
+                <div class="crypto-wallet-grid">
+                    <div class="wallet-stat-item">
+                        <div class="wallet-stat-icon">
+                            <i class="fas fa-coins"></i>
                         </div>
-                        <div class="col-md-4">
-                            <div class="p-3 wallet-stat-card rounded">
-                                <h4 class="mb-1 fw-bold text-white">${{ number_format($wallet->balance * $cryptocurrency->current_price, 2) }}</h4>
-                                <small class="wallet-label">USD Value</small>
-                            </div>
+                        <div class="wallet-stat-content">
+                            <div class="wallet-stat-value">{{ number_format($wallet->balance, 8) }}</div>
+                            <div class="wallet-stat-label">{{ $cryptocurrency->symbol }} Balance</div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="p-3 wallet-stat-card rounded">
-                                <h4 class="mb-1 fw-bold text-white">{{ number_format(($wallet->balance / $cryptocurrency->total_supply) * 100, 2) }}%</h4>
-                                <small class="wallet-label">Of Total Supply</small>
-                            </div>
+                    </div>
+                    <div class="wallet-stat-item">
+                        <div class="wallet-stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="wallet-stat-content">
+                            <div class="wallet-stat-value">${{ number_format($wallet->balance * $cryptocurrency->current_price, 2) }}</div>
+                            <div class="wallet-stat-label">USD Value</div>
+                        </div>
+                    </div>
+                    <div class="wallet-stat-item">
+                        <div class="wallet-stat-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="wallet-stat-content">
+                            <div class="wallet-stat-value">{{ number_format(($wallet->balance / $cryptocurrency->total_supply) * 100, 2) }}%</div>
+                            <div class="wallet-stat-label">Of Total Supply</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    @endif
+        @endif
 
-    <!-- Market Stats -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h3 class="mb-3 text-muted">Market Stats</h3>
-            <div class="row g-3">
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">Market Cap</h6>
-                            <p class="card-text h5 mb-0 fw-bold">${{ number_format($cryptocurrency->market_cap, 2) }}</p>
-                        </div>
-                    </div>
+        <!-- Modern Market Stats Grid -->
+        <div class="crypto-section-header">
+            <h2>Market Statistics</h2>
+        </div>
+        <div class="crypto-stats-grid mb-4">
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon market-cap">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">24h Volume</h6>
-                            <p class="card-text h5 mb-0 fw-bold">${{ number_format($cryptocurrency->volume_24h, 2) }}</p>
-                        </div>
-                    </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">Market Cap</div>
+                    <div class="stat-card-value">${{ number_format($cryptocurrency->market_cap, 2) }}</div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">24h Transactions</h6>
-                            <p class="card-text h5 mb-0 fw-bold">{{ $cryptocurrency->transactions()->whereDate('created_at', today())->count() }}</p>
-                        </div>
-                    </div>
+            </div>
+            
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon volume">
+                    <i class="fas fa-exchange-alt"></i>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">Total Supply</h6>
-                            <p class="card-text h6 mb-0 fw-bold">{{ number_format($cryptocurrency->total_supply, 0) }}</p>
-                            <small class="text-muted">{{ $cryptocurrency->symbol }}</small>
-                        </div>
-                    </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">24h Volume</div>
+                    <div class="stat-card-value">${{ number_format($cryptocurrency->volume_24h, 2) }}</div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">Available</h6>
-                            <p class="card-text h6 mb-0 fw-bold">{{ number_format($cryptocurrency->available_supply, 0) }}</p>
-                            <small class="text-muted">{{ $cryptocurrency->symbol }}</small>
-                        </div>
-                    </div>
+            </div>
+            
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon transactions">
+                    <i class="fas fa-receipt"></i>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body py-3">
-                            <h6 class="card-title text-muted small mb-2">Circulating</h6>
-                            <p class="card-text h6 mb-0 fw-bold">{{ number_format($cryptocurrency->circulating_supply, 0) }}</p>
-                            <small class="text-muted">{{ $cryptocurrency->symbol }}</small>
-                        </div>
-                    </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">24h Transactions</div>
+                    <div class="stat-card-value">{{ $cryptocurrency->transactions()->whereDate('created_at', today())->count() }}</div>
+                </div>
+            </div>
+            
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon supply">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">Total Supply</div>
+                    <div class="stat-card-value">{{ number_format($cryptocurrency->total_supply, 0) }}</div>
+                    <div class="stat-card-subtitle">{{ $cryptocurrency->symbol }}</div>
+                </div>
+            </div>
+            
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon available">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">Available</div>
+                    <div class="stat-card-value">{{ number_format($cryptocurrency->available_supply, 0) }}</div>
+                    <div class="stat-card-subtitle">{{ $cryptocurrency->symbol }}</div>
+                </div>
+            </div>
+            
+            <div class="crypto-stat-card">
+                <div class="stat-card-icon circulating">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <div class="stat-card-content">
+                    <div class="stat-card-label">Circulating</div>
+                    <div class="stat-card-value">{{ number_format($cryptocurrency->circulating_supply, 0) }}</div>
+                    <div class="stat-card-subtitle">{{ $cryptocurrency->symbol }}</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Token Details & Fee Structure -->
-    <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-light border-0">
-                    <h5 class="mb-0 text-muted">Token Details</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Network:</span>
-                                <div class="fw-bold">{{ ucfirst($cryptocurrency->blockchain_network) }}</div>
+        <!-- Token Details & Fee Structure -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="crypto-info-card">
+                    <div class="crypto-info-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Token Details</span>
+                    </div>
+                    <div class="crypto-info-body">
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-icon"><i class="fas fa-network-wired"></i></div>
+                                <div class="info-content">
+                                    <div class="info-label">Network</div>
+                                    <div class="info-value">{{ ucfirst($cryptocurrency->blockchain_network) }}</div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Type:</span>
-                                <div class="fw-bold">{{ ucfirst($cryptocurrency->token_type) }}</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Initial Price:</span>
-                                <div class="fw-bold">${{ number_format($cryptocurrency->initial_price, 8) }}</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Created:</span>
-                                <div class="fw-bold">{{ $cryptocurrency->created_at->format('M d, Y') }}</div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="detail-item">
-                                <span class="text-muted small">Features:</span>
-                                <div class="mt-1">
-                                    @if($cryptocurrency->transferable)
-                                        <span class="badge bg-primary rounded-pill me-1">Transferable</span>
-                                    @endif
-                                    @if($cryptocurrency->enable_burning)
-                                        <span class="badge bg-warning rounded-pill me-1">Burnable</span>
-                                    @endif
-                                    @if($cryptocurrency->enable_minting)
-                                        <span class="badge bg-info rounded-pill me-1">Mintable</span>
-                                    @endif
+                            <div class="info-item">
+                                <div class="info-icon"><i class="fas fa-tag"></i></div>
+                                <div class="info-content">
+                                    <div class="info-label">Type</div>
+                                    <div class="info-value">{{ ucfirst($cryptocurrency->token_type) }}</div>
                                 </div>
                             </div>
                         </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-icon"><i class="fas fa-rocket"></i></div>
+                                <div class="info-content">
+                                    <div class="info-label">Initial Price</div>
+                                    <div class="info-value">${{ number_format($cryptocurrency->initial_price, 8) }}</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon"><i class="fas fa-calendar-alt"></i></div>
+                                <div class="info-content">
+                                    <div class="info-label">Created</div>
+                                    <div class="info-value">{{ $cryptocurrency->created_at->format('M d, Y') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-features">
+                            <div class="info-label mb-2">Features</div>
+                            <div class="feature-badges">
+                                @if($cryptocurrency->transferable)
+                                    <span class="feature-badge transferable">
+                                        <i class="fas fa-exchange-alt"></i> Transferable
+                                    </span>
+                                @endif
+                                @if($cryptocurrency->enable_burning)
+                                    <span class="feature-badge burnable">
+                                        <i class="fas fa-fire"></i> Burnable
+                                    </span>
+                                @endif
+                                @if($cryptocurrency->enable_minting)
+                                    <span class="feature-badge mintable">
+                                        <i class="fas fa-plus-circle"></i> Mintable
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-light border-0">
-                    <h5 class="mb-0 text-muted">Fee Structure</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Creator Fee:</span>
-                                <div class="fw-bold">{{ number_format($cryptocurrency->creator_fee_percentage, 2) }}%</div>
+            
+            <div class="col-lg-6">
+                <div class="crypto-info-card">
+                    <div class="crypto-info-header">
+                        <i class="fas fa-percentage"></i>
+                        <span>Fee Structure</span>
+                    </div>
+                    <div class="crypto-info-body">
+                        <div class="fee-item">
+                            <div class="fee-label">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Creator Fee</span>
                             </div>
+                            <div class="fee-value">{{ number_format($cryptocurrency->creator_fee_percentage, 2) }}%</div>
                         </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Platform Fee:</span>
-                                <div class="fw-bold">{{ number_format($cryptocurrency->platform_fee_percentage, 2) }}%</div>
+                        <div class="fee-item">
+                            <div class="fee-label">
+                                <i class="fas fa-building"></i>
+                                <span>Platform Fee</span>
                             </div>
+                            <div class="fee-value">{{ number_format($cryptocurrency->platform_fee_percentage, 2) }}%</div>
                         </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Liquidity Pool:</span>
-                                <div class="fw-bold">{{ number_format($cryptocurrency->liquidity_pool_percentage, 2) }}%</div>
+                        <div class="fee-item">
+                            <div class="fee-label">
+                                <i class="fas fa-water"></i>
+                                <span>Liquidity Pool</span>
                             </div>
+                            <div class="fee-value">{{ number_format($cryptocurrency->liquidity_pool_percentage, 2) }}%</div>
                         </div>
-                        <div class="col-6">
-                            <div class="detail-item">
-                                <span class="text-muted small">Creator:</span>
-                                <div class="fw-bold">{{ $cryptocurrency->creator->name ?? 'Unknown' }}</div>
+                        <div class="fee-divider"></div>
+                        <div class="info-item-full">
+                            <div class="info-icon"><i class="fas fa-user-circle"></i></div>
+                            <div class="info-content">
+                                <div class="info-label">Creator</div>
+                                <div class="info-value">{{ $cryptocurrency->creator->name ?? 'Unknown' }}</div>
                             </div>
                         </div>
                         @if($cryptocurrency->contract_address)
-                        <div class="col-12">
-                            <div class="detail-item">
-                                <span class="text-muted small">Contract:</span>
-                                <div class="fw-bold">
-                                    <code class="bg-light p-1 rounded small">{{ substr($cryptocurrency->contract_address, 0, 8) }}...{{ substr($cryptocurrency->contract_address, -6) }}</code>
-                                </div>
+                        <div class="info-item-full">
+                            <div class="info-icon"><i class="fas fa-file-contract"></i></div>
+                            <div class="info-content">
+                                <div class="info-label">Contract Address</div>
+                                <div class="contract-address">{{ substr($cryptocurrency->contract_address, 0, 8) }}...{{ substr($cryptocurrency->contract_address, -6) }}</div>
                             </div>
                         </div>
                         @endif
@@ -259,28 +287,30 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- About Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-0">
-                    <h5 class="mb-0 text-muted">About {{ $cryptocurrency->name }}</h5>
+        <!-- About Section -->
+        <div class="crypto-about-section mb-4">
+            <div class="crypto-about-card">
+                <div class="crypto-about-header">
+                    <h3>About {{ $cryptocurrency->name }}</h3>
                 </div>
-                <div class="card-body">
-                    <p class="card-text mb-3">{{ $cryptocurrency->description }}</p>
+                <div class="crypto-about-body">
+                    <p class="crypto-description">{{ $cryptocurrency->description }}</p>
                     
                     @if($cryptocurrency->website || $cryptocurrency->whitepaper)
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="crypto-links">
                             @if($cryptocurrency->website)
-                                <a href="{{ $cryptocurrency->website }}" target="_blank" class="btn btn-outline-primary">
-                                    <i class="fas fa-globe me-2"></i>Website
+                                <a href="{{ $cryptocurrency->website }}" target="_blank" class="crypto-link website">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Visit Website</span>
+                                    <i class="fas fa-external-link-alt"></i>
                                 </a>
                             @endif
                             @if($cryptocurrency->whitepaper)
-                                <a href="{{ $cryptocurrency->whitepaper }}" target="_blank" class="btn btn-outline-secondary">
-                                    <i class="fas fa-file-pdf me-2"></i>Whitepaper
+                                <a href="{{ $cryptocurrency->whitepaper }}" target="_blank" class="crypto-link whitepaper">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Read Whitepaper</span>
+                                    <i class="fas fa-external-link-alt"></i>
                                 </a>
                             @endif
                         </div>
@@ -288,56 +318,53 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Recent Transactions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 text-muted">Recent Transactions</h5>
-                    <button class="btn btn-sm btn-outline-primary" onclick="refreshTransactions()">
-                        <i class="fas fa-sync-alt me-1"></i>Refresh
+        <!-- Recent Transactions -->
+        <div class="crypto-transactions-section">
+            <div class="crypto-transactions-card">
+                <div class="crypto-transactions-header">
+                    <h3>Recent Transactions</h3>
+                    <button class="crypto-refresh-btn" onclick="refreshTransactions()">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh</span>
                     </button>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="border-0 text-muted small">Type</th>
-                                    <th class="border-0 text-muted small">Amount</th>
-                                    <th class="border-0 text-muted small">Price</th>
-                                    <th class="border-0 text-muted small">Total</th>
-                                    <th class="border-0 text-muted small">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactions-table">
-                                @forelse($cryptocurrency->transactions()->latest()->take(10)->get() as $transaction)
-                                    <tr>
-                                        <td>
-                                            <span class="badge rounded-pill {{ $transaction->type == 'buy' ? 'bg-success' : ($transaction->type == 'sell' ? 'bg-danger' : 'bg-secondary') }}">
-                                                {{ ucfirst($transaction->type) }}
-                                            </span>
-                                        </td>
-                                        <td class="fw-bold">{{ number_format($transaction->amount, 8) }} {{ $cryptocurrency->symbol }}</td>
-                                        <td>${{ number_format($transaction->price_per_token, 8) }}</td>
-                                        <td class="fw-bold">${{ number_format($transaction->total_price, 2) }}</td>
-                                        <td class="text-muted">{{ $transaction->created_at->diffForHumans() }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted py-5">
-                                            <div class="opacity-50">
-                                                <i class="fas fa-chart-line fa-2x mb-3"></i>
-                                                <h6>No transactions yet</h6>
-                                                <small>Be the first to trade this token!</small>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="crypto-transactions-body">
+                    <div class="transactions-table-wrapper" id="transactions-table">
+                        @forelse($cryptocurrency->transactions()->latest()->take(10)->get() as $transaction)
+                            <div class="transaction-row">
+                                <div class="transaction-type">
+                                    <span class="transaction-badge {{ $transaction->type }}">
+                                        <i class="fas fa-{{ $transaction->type == 'buy' ? 'arrow-up' : ($transaction->type == 'sell' ? 'arrow-down' : 'exchange-alt') }}"></i>
+                                        {{ ucfirst($transaction->type) }}
+                                    </span>
+                                </div>
+                                <div class="transaction-amount">
+                                    <div class="amount-value">{{ number_format($transaction->amount, 8) }}</div>
+                                    <div class="amount-symbol">{{ $cryptocurrency->symbol }}</div>
+                                </div>
+                                <div class="transaction-price">
+                                    <div class="price-label">Price</div>
+                                    <div class="price-value">${{ number_format($transaction->price_per_token, 8) }}</div>
+                                </div>
+                                <div class="transaction-total">
+                                    <div class="total-label">Total</div>
+                                    <div class="total-value">${{ number_format($transaction->total_price, 2) }}</div>
+                                </div>
+                                <div class="transaction-date">
+                                    <i class="fas fa-clock"></i>
+                                    <span>{{ $transaction->created_at->diffForHumans() }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-transactions">
+                                <div class="no-transactions-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>No Transactions Yet</h4>
+                                <p>Be the first to trade this token!</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -346,199 +373,793 @@
 </div>
 
 <style>
+/* Modern Cryptocurrency Detail Page Styles */
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --wallet-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
+    --primary-color: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary-color: #8b5cf6;
+    --success-color: #10b981;
+    --success-dark: #059669;
+    --danger-color: #ef4444;
+    --danger-dark: #dc2626;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
+    --dark-bg: #1e293b;
+    --light-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.card {
-    border: none !important;
-    border-radius: 16px !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
-    transition: all 0.3s ease;
+.crypto-detail-page {
+    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+    min-height: 100vh;
+    padding-bottom: 2rem;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+/* Hero Section */
+.crypto-hero-section {
+    margin-bottom: 2rem;
 }
 
-/* FIXED: Logo styling */
-.token-logo-img {
+.crypto-hero-card {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+.crypto-hero-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.1;
+}
+
+.crypto-hero-content {
+    position: relative;
+    padding: 2.5rem;
+}
+
+.crypto-logo-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.crypto-logo-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
     object-fit: cover;
-    border: 3px solid #fff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 4px solid var(--card-bg);
+    box-shadow: var(--shadow-lg);
 }
 
-.token-logo-placeholder {
-    border: 3px solid #fff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+.crypto-logo-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    border: 4px solid var(--card-bg);
+    box-shadow: var(--shadow-lg);
 }
 
-/* FIXED: Wallet section styling */
-.wallet-gradient {
-    background: var(--wallet-gradient) !important;
+.crypto-verified-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 32px;
+    height: 32px;
+    background: var(--success-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    border: 3px solid var(--card-bg);
+    box-shadow: var(--shadow-md);
 }
 
-.wallet-header {
-    background: transparent !important;
+.crypto-title-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-.wallet-stat-card {
-    background: rgba(255, 255, 255, 0.2) !important;
+.crypto-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.crypto-symbol-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, var(--primary-color)15, var(--secondary-color)15);
+    color: var(--primary-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid var(--primary-color)30;
+}
+
+.crypto-price-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.crypto-current-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.crypto-price-change {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.crypto-price-change.positive {
+    background: var(--success-color)15;
+    color: var(--success-color);
+}
+
+.crypto-price-change.negative {
+    background: var(--danger-color)15;
+    color: var(--danger-color);
+}
+
+.crypto-price-change .change-label {
+    font-size: 0.875rem;
+    opacity: 0.7;
+    margin-left: 0.25rem;
+}
+
+.crypto-action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.crypto-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.crypto-btn i {
+    font-size: 1.125rem;
+}
+
+.crypto-btn-buy {
+    background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.crypto-btn-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.crypto-btn-sell {
+    background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.crypto-btn-sell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    color: white;
+}
+
+/* Wallet Section */
+.crypto-wallet-section {
+    margin-bottom: 2rem;
+}
+
+.crypto-wallet-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow-xl);
+    color: white;
+}
+
+.crypto-wallet-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.crypto-wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.wallet-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.wallet-label {
-    color: rgba(255, 255, 255, 0.8) !important;
+.wallet-stat-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.wallet-stat-content {
+    flex: 1;
+}
+
+.wallet-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.wallet-stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* Section Header */
+.crypto-section-header {
+    margin-bottom: 1.5rem;
+}
+
+.crypto-section-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Stats Grid */
+.crypto-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.crypto-stat-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.crypto-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.stat-card-icon.market-cap {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.stat-card-icon.volume {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.stat-card-icon.transactions {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-card-icon.supply {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-card-icon.available {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.stat-card-icon.circulating {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.stat-card-content {
+    flex: 1;
+}
+
+.stat-card-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
     font-weight: 500;
 }
 
-.badge {
-    font-size: 0.8rem;
+.stat-card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Info Cards */
+.crypto-info-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    height: 100%;
+}
+
+.crypto-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color)10, var(--secondary-color)10);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.25rem;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    color: var(--text-primary);
 }
 
-.btn {
-    border-radius: 12px !important;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+.crypto-info-body {
+    padding: 1.5rem;
 }
 
-.btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+.info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
-.btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
 }
 
-.btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    border: none;
-}
-
-.btn-primary {
-    background: var(--primary-gradient);
-    border: none;
-}
-
-/* Button Alignment Fix */
-.d-flex.gap-3 {
-    gap: 1rem !important;
-}
-
-.d-flex.gap-3 .btn {
-    min-width: 120px;
-    display: inline-flex;
+.info-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color)15, var(--secondary-color)15);
+    border-radius: 10px;
+    display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--primary-color);
+    flex-shrink: 0;
 }
 
-code {
-    background-color: #f8f9fa;
-    padding: 4px 8px;
-    border-radius: 6px;
+.info-content {
+    flex: 1;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.info-features {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.feature-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.feature-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.feature-badge.transferable {
+    background: var(--info-color)15;
+    color: var(--info-color);
+}
+
+.feature-badge.burnable {
+    background: var(--warning-color)15;
+    color: var(--warning-color);
+}
+
+.feature-badge.mintable {
+    background: var(--success-color)15;
+    color: var(--success-color);
+}
+
+.fee-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fee-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.fee-label i {
+    color: var(--primary-color);
+}
+
+.fee-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fee-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 1rem 0;
+}
+
+.info-item-full {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.contract-address {
     font-family: 'Monaco', 'Consolas', monospace;
-    font-size: 0.85em;
-}
-
-.detail-item {
-    padding: 8px 0;
-}
-
-.detail-item .text-muted {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.card-header {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--light-bg);
+    border-radius: 8px;
+    color: var(--text-primary);
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
-.table th {
+/* About Section */
+.crypto-about-section {
+    margin-bottom: 2rem;
+}
+
+.crypto-about-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.crypto-about-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color)10, var(--secondary-color)10);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.crypto-about-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.crypto-about-body {
+    padding: 2rem;
+}
+
+.crypto-description {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.crypto-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.crypto-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
 }
 
-.opacity-75 {
-    opacity: 0.75;
+.crypto-link.website {
+    background: var(--info-color)10;
+    color: var(--info-color);
+    border-color: var(--info-color)30;
 }
 
-.opacity-50 {
-    opacity: 0.5;
+.crypto-link.website:hover {
+    background: var(--info-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    .d-flex.gap-3 {
-        flex-direction: column;
-        gap: 0.5rem !important;
-    }
-    
-    .d-flex.gap-3 .btn {
-        width: 100%;
-        min-width: unset;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .h4 {
-        font-size: 1.5rem;
-    }
-    
-    .token-logo img,
-    .token-logo div {
-        width: 60px !important;
-        height: 60px !important;
-        font-size: 1.5rem !important;
-    }
+.crypto-link.whitepaper {
+    background: var(--text-secondary)10;
+    color: var(--text-secondary);
+    border-color: var(--text-secondary)30;
 }
 
-/* Smooth animations */
-* {
+.crypto-link.whitepaper:hover {
+    background: var(--text-secondary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Transactions Section */
+.crypto-transactions-section {
+    margin-bottom: 2rem;
+}
+
+.crypto-transactions-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.crypto-transactions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color)10, var(--secondary-color)10);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.crypto-transactions-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.crypto-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.3s ease;
 }
 
-/* Custom scrollbar for table */
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
+.crypto-refresh-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
 }
 
-.table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
+.crypto-transactions-body {
+    padding: 1.5rem;
+}
+
+.transactions-table-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.transaction-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.25rem;
+    background: var(--light-bg);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.transaction-row:hover {
+    background: var(--primary-color)08;
+    transform: translateX(4px);
+}
+
+.transaction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
+.transaction-badge.buy {
+    background: var(--success-color)15;
+    color: var(--success-color);
 }
 
-.table-responsive::-webkit-scrollbar-thumb:hover {
-    background: #555;
+.transaction-badge.sell {
+    background: var(--danger-color)15;
+    color: var(--danger-color);
 }
 
-/* Loading animation */
+.transaction-badge.create {
+    background: var(--info-color)15;
+    color: var(--info-color);
+}
+
+.transaction-amount {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.amount-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.amount-symbol {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.transaction-price,
+.transaction-total {
+    text-align: right;
+}
+
+.price-label,
+.total-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.price-value,
+.total-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.transaction-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.no-transactions {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.no-transactions-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color)15, var(--secondary-color)15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.no-transactions h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.no-transactions p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+/* Animations */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -548,13 +1169,64 @@ code {
     animation: spin 1s linear infinite;
 }
 
-/* Ensure text is visible on all backgrounds */
-.text-white {
-    color: #ffffff !important;
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .crypto-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
-.wallet-stat-card h4 {
-    color: #ffffff !important;
+@media (max-width: 768px) {
+    .crypto-hero-content {
+        padding: 1.5rem;
+    }
+    
+    .crypto-name {
+        font-size: 1.75rem;
+    }
+    
+    .crypto-current-price {
+        font-size: 1.75rem;
+    }
+    
+    .crypto-action-buttons {
+        width: 100%;
+    }
+    
+    .crypto-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .crypto-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .crypto-wallet-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .transaction-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .transaction-price,
+    .transaction-total {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .crypto-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .crypto-price-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
 
