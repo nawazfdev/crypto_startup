@@ -1225,10 +1225,17 @@ function incrementVideoViews(videoId) {
             <span class="bottom-nav-text">Marketplace</span>
         </a>
 
-        <a href="/profile" class="bottom-nav-item">
+        @auth
+        <a href="{{ route('profile', ['username' => Auth::user()->username ?? Auth::user()->id]) }}" class="bottom-nav-item">
             <i class="fas fa-user bottom-nav-icon"></i>
             <span class="bottom-nav-text">Profile</span>
         </a>
+        @else
+        <a href="{{ route('login') }}" class="bottom-nav-item">
+            <i class="fas fa-user bottom-nav-icon"></i>
+            <span class="bottom-nav-text">Profile</span>
+        </a>
+        @endauth
     </nav>
 
     <!-- Enhanced Reels Styles -->

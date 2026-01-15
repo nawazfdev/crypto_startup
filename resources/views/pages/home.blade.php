@@ -118,18 +118,15 @@
             bottom: 60px;
             left: 0;
             right: 0;
-            padding: 20px;
+            padding: 20px 20px 20px 10px;
             background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
             color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
             z-index: 10;
         }
         
         .video-info {
-            flex: 1;
-            max-width: calc(100% - 200px);
+            max-width: 70%;
+            text-align: left;
         }
         
         /* Right Action Buttons (TikTok style) */
@@ -184,18 +181,18 @@
         }
         
         .user-info {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             margin-bottom: 15px;
-            gap: 12px;
+            gap: 10px;
         }
         
         .user-info.clickable {
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 6px;
+            padding: 6px 6px 6px 0;
             border-radius: 10px;
-            margin: -6px -6px 5px -6px;
+            margin: -6px -6px 5px 0;
         }
         
         .user-info.clickable:hover {
@@ -233,6 +230,7 @@
         
         .video-caption {
             margin-top: 8px;
+            text-align: left;
         }
         
         .video-title {
@@ -241,6 +239,7 @@
             font-weight: 600;
             line-height: 1.3;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            text-align: left;
         }
         
         .video-description {
@@ -691,12 +690,13 @@
             }
             
             .video-overlay {
-                padding: 15px;
+                padding: 15px 15px 15px 8px;
                 bottom: 55px;
             }
             
             .video-info {
-                max-width: calc(100% - 75px);
+                max-width: calc(100% - 70px);
+                text-align: left;
             }
             
             .video-actions-left {
@@ -1257,6 +1257,10 @@
                         <i class="fas fa-user"></i>
                         <span>Profile</span>
                     </a>
+                    <a href="{{ route('creator.dashboard') }}" class="header-menu-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Creator Dashboard</span>
+                    </a>
                     <a href="/create" class="header-menu-item">
                         <i class="fas fa-video"></i>
                         <span>Create Video</span>
@@ -1462,7 +1466,7 @@
                 <i class="fas fa-store bottom-nav-icon"></i>
                 <span class="bottom-nav-text">Market</span>
             </a>
-            <a href="/{{ Auth::user()->username ?? 'profile' }}" class="bottom-nav-item">
+            <a href="{{ route('profile', ['username' => Auth::user()->username ?? Auth::user()->id]) }}" class="bottom-nav-item">
                 <i class="fas fa-user bottom-nav-icon"></i>
                 <span class="bottom-nav-text">Profile</span>
             </a>

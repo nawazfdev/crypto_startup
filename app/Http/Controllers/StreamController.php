@@ -29,6 +29,15 @@ class StreamController extends Controller
      */
     public function create()
     {
+        // Check if user has verified their identity
+        $user = Auth::user();
+        $verification = $user->verification;
+        
+        if (!$verification || $verification->status !== 'verified') {
+            return redirect()->route('my.settings', ['type' => 'verify'])
+                ->with('error', 'You need to verify your identity before you can start a livestream. Please complete the ID verification process.');
+        }
+        
         return view('streams.create');
     }
 
@@ -37,6 +46,15 @@ class StreamController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if user has verified their identity
+        $user = Auth::user();
+        $verification = $user->verification;
+        
+        if (!$verification || $verification->status !== 'verified') {
+            return redirect()->route('my.settings', ['type' => 'verify'])
+                ->with('error', 'You need to verify your identity before you can start a livestream.');
+        }
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',

@@ -8,14 +8,24 @@
             </div>
         </a>
         
-        <!-- Livestreams button -->
-        <a href="{{ route('streams.index') }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{Route::currentRouteName() == 'streams.index' ? 'active' : ''}}">
+        <!-- Create Video button -->
+        @auth
+        <a href="/create" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{request()->is('create') ? 'active' : ''}}">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="icon-wrapper d-flex justify-content-center align-items-center">
                     @include('elements.icon',['icon'=>'videocam-outline','variant'=>'large'])
                 </div>
             </div>
         </a>
+        @else
+        <a href="{{ route('login') }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                    @include('elements.icon',['icon'=>'videocam-outline','variant'=>'large'])
+                </div>
+            </div>
+        </a>
+        @endauth
         
         <!-- Reels button -->
         <a href="{{ route('videos.reels') }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{Route::currentRouteName() == 'videos.reels' ? 'active' : ''}}">

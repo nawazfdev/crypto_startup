@@ -1,4 +1,4 @@
-﻿{{-- Modern Professional Header --}}
+{{-- Modern Professional Header --}}
 <nav class="modern-navbar {{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? 'dark-theme' : 'light-theme') : (Cookie::get('app_theme') == 'dark' ? 'dark-theme' : 'light-theme'))}}">
     <div class="container-fluid">
         <div class="navbar-content">
@@ -244,6 +244,15 @@
                                     </svg>
                                 </div>
                                 <span>{{__('My Profile')}}</span>
+                            </a>
+                            <a class="dropdown-item" href="{{route('creator.dashboard')}}" style="background: linear-gradient(135deg, rgba(255,0,80,0.08) 0%, rgba(255,51,102,0.03) 100%);">
+                                <div class="item-icon" style="color: #FF0050;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M18 9l-5 5-4-4-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <span style="color: #FF0050; font-weight: 600;">{{__('Creator Dashboard')}}</span>
                             </a>
                             <a class="dropdown-item" href="{{route('my.settings')}}">
                                 <div class="item-icon">

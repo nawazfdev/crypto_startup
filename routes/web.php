@@ -946,6 +946,15 @@ Route::get('/install/finishInstall', ['uses' => 'InstallerController@finishInsta
 Route::get('/update', ['uses' => 'InstallerController@upgrade', 'as'   => 'installer.update']);
 Route::post('/update/doUpdate', ['uses' => 'InstallerController@doUpgrade', 'as'   => 'installer.doUpdate']);
 
+// Creator Dashboard Routes
+Route::prefix('creator')->name('creator.')->middleware(['auth', 'verified', '2fa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\CreatorController::class, 'dashboard'])->name('dashboard');
+    Route::get('/videos', [App\Http\Controllers\CreatorController::class, 'videos'])->name('videos');
+    Route::get('/streams', [App\Http\Controllers\CreatorController::class, 'streams'])->name('streams');
+    Route::get('/analytics', [App\Http\Controllers\CreatorController::class, 'analytics'])->name('analytics');
+    Route::get('/settings', [App\Http\Controllers\CreatorController::class, 'settings'])->name('settings');
+});
+
 // (Feed/Search) Suggestions filter
 Route::post('/suggestions/members', ['uses' => 'FeedController@filterSuggestedMembers', 'as'   => 'suggestions.filter']);
 
