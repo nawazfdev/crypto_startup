@@ -136,6 +136,42 @@ return [
             'level' => 'debug',
         ],
 
+        // Security & Compliance Logging
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => 90, // Keep security logs for 90 days
+        ],
+
+        'aml' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/aml.log'),
+            'level' => 'info',
+            'days' => 365, // Keep AML logs for 1 year (regulatory requirement)
+        ],
+
+        'kyc' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/kyc.log'),
+            'level' => 'info',
+            'days' => 365, // Keep KYC logs for 1 year
+        ],
+
+        'fraud' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/fraud.log'),
+            'level' => 'warning',
+            'days' => 365, // Keep fraud logs for 1 year
+        ],
+
+        'crypto' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/crypto.log'),
+            'level' => 'info',
+            'days' => 365, // Keep crypto transaction logs for 1 year
+        ],
+
     ],
 
 ];

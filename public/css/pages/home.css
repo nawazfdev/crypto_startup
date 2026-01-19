@@ -192,9 +192,18 @@ body {
 .user-info-section {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 14px;
+    margin-bottom: 16px;
     pointer-events: auto;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    border-radius: 14px;
+    transition: all 0.3s ease;
+}
+
+.user-info-section:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .user-avatar-wrapper {
@@ -206,8 +215,8 @@ body {
 }
 
 .user-avatar {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: var(--tiktok-primary);
     color: var(--tiktok-white);
@@ -215,15 +224,15 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 18px;
-    border: 2px solid var(--tiktok-white);
+    font-size: 20px;
+    border: 3px solid var(--tiktok-white);
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s ease;
 }
 
 .user-avatar:hover {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .follow-btn-wrapper {
@@ -259,17 +268,18 @@ body {
 }
 
 .username {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--tiktok-white);
-    margin: 0 0 4px 0;
+    margin: 0 0 5px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: 0.2px;
 }
 
 .user-name {
-    font-size: 14px;
+    font-size: 15px;
     color: rgba(255, 255, 255, 0.9);
     margin: 0;
     white-space: nowrap;
@@ -709,17 +719,23 @@ body {
     }
     
     .user-avatar {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
+        width: 48px;
+        height: 48px;
+        font-size: 17px;
+        border-width: 2px;
     }
     
     .username {
-        font-size: 14px;
+        font-size: 16px;
     }
     
     .user-name {
-        font-size: 12px;
+        font-size: 13px;
+    }
+    
+    .user-info-section {
+        gap: 12px;
+        padding: 8px 10px;
     }
     
     .video-caption {
@@ -767,21 +783,23 @@ body {
     }
     
     .user-info-section {
-        gap: 8px;
+        gap: 10px;
+        padding: 6px 8px;
     }
     
     .user-avatar {
-        width: 36px;
-        height: 36px;
-        font-size: 14px;
+        width: 44px;
+        height: 44px;
+        font-size: 15px;
+        border-width: 2px;
     }
     
     .username {
-        font-size: 13px;
+        font-size: 15px;
     }
     
     .user-name {
-        font-size: 11px;
+        font-size: 12px;
     }
     
     .video-caption {

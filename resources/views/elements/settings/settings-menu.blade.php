@@ -24,6 +24,20 @@
                     </div>
                 </a>
             @endforeach
+            
+            <!-- Legal & Compliance Section -->
+            <div class="list-group-item list-group-item-header text-muted small py-2 px-3" style="background: rgba(0,0,0,0.02); border-top: 1px solid rgba(0,0,0,0.1);">
+                <strong>{{ __('Legal & Compliance') }}</strong>
+            </div>
+            <a href="{{ route('dmca.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                    @include('elements.icon', ['icon' => 'shield-checkmark-outline', 'centered' => 'false', 'classes' => 'mr-3', 'variant' => 'medium'])
+                    <span>{{ __('DMCA & Copyright') }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    @include('elements.icon', ['icon' => 'chevron-forward-outline'])
+                </div>
+            </a>
         </div>
     </div>
 </div>

@@ -74,6 +74,11 @@ class Kernel extends HttpKernel
         'verified' => Middleware\EnsureEmailIsVerified::class,
         '2fa' => Middleware\Check2FA::class,
         'jsVars' => Middleware\JavascriptVariables::class,
+        // Crypto compliance middleware
+        'kyc' => Middleware\KYCVerification::class,
+        'transaction.limits' => Middleware\TransactionLimits::class,
+        // Security middleware
+        'login.rate' => Middleware\LoginRateLimiter::class,
     ];
 
     /**

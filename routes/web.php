@@ -523,6 +523,17 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin.user']], funct
 //     });
 // });
 
+// API - Username availability check (public)
+Route::get('/api/check-username', function(\Illuminate\Http\Request $request) {
+    $username = $request->get('username');
+    if (!$username || strlen($username) < 3) {
+        return response()->json(['available' => false, 'message' => 'Username must be at least 3 characters']);
+    }
+    
+    $exists = \App\Model\User::where('username', strtolower($username))->exists();
+    return response()->json(['available' => !$exists]);
+});
+
 // Home & contact page
 Route::get('/', ['uses' => 'HomeController@index', 'as' => 'home']);
 
@@ -770,6 +781,14 @@ Route::prefix('cryptocurrency')->name('cryptocurrency.')->middleware(['auth', 'v
     // Marketplace and exploration
     Route::get('/marketplace', [App\Http\Controllers\CryptocurrencyController::class, 'marketplace'])->name('marketplace');
     Route::get('/explorer', [App\Http\Controllers\CryptocurrencyController::class, 'explorer'])->name('explorer');
+    
+    // Credit Card to Crypto On-Ramp
+    Route::prefix('buy-tokens')->name('onramp.')->group(function () {
+        Route::get('/', [App\Http\Controllers\CryptoOnRampController::class, 'index'])->name('index');
+        Route::get('/buy', [App\Http\Controllers\CryptoOnRampController::class, 'buyForm'])->name('buy');
+        Route::post('/purchase', [App\Http\Controllers\CryptoOnRampController::class, 'processPurchase'])->name('purchase');
+        Route::get('/quote', [App\Http\Controllers\CryptoOnRampController::class, 'getQuote'])->name('quote');
+    });
 });
 
 // NFT Marketplace Routes
@@ -804,22 +823,32 @@ Route::prefix('nft')->name('nft.')->middleware(['auth', 'verified', '2fa'])->gro
 
 // Continue cryptocurrency routes
 Route::prefix('cryptocurrency')->name('cryptocurrency.')->middleware(['auth', 'verified', '2fa'])->group(function () {
-    // Wallet management
+    // Wallet management (KYC Level 1 required)
     Route::get('/wallet', [App\Http\Controllers\CryptocurrencyController::class, 'wallet'])->name('wallet');
     Route::get('/transactions/{type?}', [App\Http\Controllers\CryptocurrencyController::class, 'transactions'])->name('transactions');
     
-    // Deposit and withdraw
-    Route::get('/deposit', [App\Http\Controllers\CryptocurrencyController::class, 'deposit'])->name('deposit');
-    Route::post('/deposit', [App\Http\Controllers\CryptocurrencyController::class, 'processDeposit'])->name('deposit.process');
-    Route::get('/withdraw', [App\Http\Controllers\CryptocurrencyController::class, 'withdraw'])->name('withdraw');
-    Route::post('/withdraw', [App\Http\Controllers\CryptocurrencyController::class, 'processWithdraw'])->name('withdraw.process');
+    // Deposit and withdraw (KYC Level 1+ required with transaction limits)
+    Route::middleware(['kyc:1'])->group(function () {
+        Route::get('/deposit', [App\Http\Controllers\CryptocurrencyController::class, 'deposit'])->name('deposit');
+        Route::post('/deposit', [App\Http\Controllers\CryptocurrencyController::class, 'processDeposit'])->name('deposit.process');
+    });
+    
+    // Withdrawals require higher KYC level
+    Route::middleware(['kyc:2', 'transaction.limits'])->group(function () {
+        Route::get('/withdraw', [App\Http\Controllers\CryptocurrencyController::class, 'withdraw'])->name('withdraw');
+        Route::post('/withdraw', [App\Http\Controllers\CryptocurrencyController::class, 'processWithdraw'])->name('withdraw.process');
+    });
     
     // Token-specific routes (MUST come LAST to avoid route conflicts)
-    Route::get('/{id}/buy', [App\Http\Controllers\CryptocurrencyController::class, 'buyForm'])->name('buy.form');
-    Route::post('/{id}/buy', [App\Http\Controllers\CryptocurrencyController::class, 'buy'])->name('buy');
-    Route::get('/{id}/sell', [App\Http\Controllers\CryptocurrencyController::class, 'sellForm'])->name('sell.form');
-    Route::post('/{id}/sell', [App\Http\Controllers\CryptocurrencyController::class, 'processSell'])->name('sell');
     Route::get('/{id}', [App\Http\Controllers\CryptocurrencyController::class, 'show'])->name('show');
+    
+    // Buy/Sell require KYC and transaction limit checks
+    Route::middleware(['kyc:1', 'transaction.limits'])->group(function () {
+        Route::get('/{id}/buy', [App\Http\Controllers\CryptocurrencyController::class, 'buyForm'])->name('buy.form');
+        Route::post('/{id}/buy', [App\Http\Controllers\CryptocurrencyController::class, 'buy'])->name('buy');
+        Route::get('/{id}/sell', [App\Http\Controllers\CryptocurrencyController::class, 'sellForm'])->name('sell.form');
+        Route::post('/{id}/sell', [App\Http\Controllers\CryptocurrencyController::class, 'processSell'])->name('sell');
+    });
 });
 
     // Feed routes
@@ -957,6 +986,16 @@ Route::prefix('creator')->name('creator.')->middleware(['auth', 'verified', '2fa
 
 // (Feed/Search) Suggestions filter
 Route::post('/suggestions/members', ['uses' => 'FeedController@filterSuggestedMembers', 'as'   => 'suggestions.filter']);
+
+// DMCA & Copyright Policy Routes
+Route::prefix('dmca')->name('dmca.')->group(function () {
+    Route::get('/', [App\Http\Controllers\DMCAController::class, 'index'])->name('index');
+    Route::get('/takedown', [App\Http\Controllers\DMCAController::class, 'takedownForm'])->name('takedown-form');
+    Route::post('/takedown', [App\Http\Controllers\DMCAController::class, 'submitTakedown'])->name('submit-takedown');
+    Route::get('/submitted', [App\Http\Controllers\DMCAController::class, 'submitted'])->name('submitted');
+    Route::get('/counter-notification', [App\Http\Controllers\DMCAController::class, 'counterNotificationForm'])->name('counter-notification');
+    Route::post('/counter-notification', [App\Http\Controllers\DMCAController::class, 'submitCounterNotification'])->name('submit-counter-notification');
+});
 
 // Public pages
 Route::get('/pages/{slug}', ['uses' => 'PublicPagesController@getPage', 'as'   => 'pages.get']);

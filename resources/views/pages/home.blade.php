@@ -183,48 +183,57 @@
         .user-info {
             display: inline-flex;
             align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
+            margin-bottom: 18px;
+            gap: 14px;
         }
         
         .user-info.clickable {
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 6px 6px 6px 0;
-            border-radius: 10px;
-            margin: -6px -6px 5px 0;
+            padding: 10px 14px 10px 10px;
+            border-radius: 14px;
+            margin: -10px -14px 8px -10px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
         }
         
         .user-info.clickable:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.03);
         }
         
         .user-avatar-initials {
-            width: 32px;
-            height: 32px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            border: 2px solid #fff;
+            border: 3px solid #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 18px;
             color: white;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease;
+        }
+        
+        .user-info.clickable:hover .user-avatar-initials {
+            transform: scale(1.08);
         }
         
         .user-details h4 {
-            margin: 0 0 2px 0;
-            font-size: 14px;
-            font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            margin: 0 0 4px 0;
+            font-size: 17px;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            letter-spacing: 0.2px;
         }
         
         .user-details p {
             margin: 0;
-            font-size: 12px;
-            opacity: 0.8;
+            font-size: 14px;
+            opacity: 0.85;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
         
@@ -705,13 +714,13 @@
             }
             
             .user-avatar-initials {
-                width: 40px;
-                height: 40px;
-                font-size: 14px;
+                width: 48px;
+                height: 48px;
+                font-size: 16px;
             }
             
             .user-details h4 {
-                font-size: 14px;
+                font-size: 16px;
             }
             
             .user-details p {
@@ -1184,17 +1193,27 @@
         /* Mobile adjustments */
         @media (max-width: 768px) {
             .user-avatar-initials {
-                width: 28px;
-                height: 28px;
-                font-size: 11px;
+                width: 44px;
+                height: 44px;
+                font-size: 15px;
+                border-width: 2px;
             }
             
             .user-details h4 {
-                font-size: 13px;
+                font-size: 15px;
             }
             
             .user-details p {
-                font-size: 11px;
+                font-size: 12px;
+            }
+            
+            .user-info {
+                gap: 12px;
+            }
+            
+            .user-info.clickable {
+                padding: 8px 12px 8px 8px;
+                margin: -8px -12px 6px -8px;
             }
             
             .top-header {
