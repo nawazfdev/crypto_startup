@@ -1000,6 +1000,26 @@ Route::prefix('dmca')->name('dmca.')->group(function () {
 // Public pages
 Route::get('/pages/{slug}', ['uses' => 'PublicPagesController@getPage', 'as'   => 'pages.get']);
 
+// PDF Documents
+Route::get('/community-guidelines', ['uses' => 'PublicPagesController@communityGuidelines', 'as' => 'community.guidelines']);
+Route::get('/privacy-policy', ['uses' => 'PublicPagesController@privacyPolicy', 'as' => 'privacy.policy']);
+
+// Custom Requests
+Route::middleware(['web'])->group(function () {
+    Route::get('/custom-requests/marketplace', [App\Http\Controllers\CustomRequestController::class, 'marketplace'])->name('custom-requests.marketplace');
+    Route::get('/custom-requests/my-requests', [App\Http\Controllers\CustomRequestController::class, 'myRequests'])->name('custom-requests.my-requests');
+    Route::get('/custom-requests/{id}', [App\Http\Controllers\CustomRequestController::class, 'show'])->name('custom-requests.show');
+    
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/custom-requests', [App\Http\Controllers\CustomRequestController::class, 'store'])->name('custom-requests.store');
+        Route::post('/custom-requests/{id}/contribute', [App\Http\Controllers\CustomRequestController::class, 'contribute'])->name('custom-requests.contribute');
+        Route::post('/custom-requests/{id}/accept', [App\Http\Controllers\CustomRequestController::class, 'accept'])->name('custom-requests.accept');
+        Route::post('/custom-requests/{id}/reject', [App\Http\Controllers\CustomRequestController::class, 'reject'])->name('custom-requests.reject');
+        Route::post('/custom-requests/{id}/complete', [App\Http\Controllers\CustomRequestController::class, 'complete'])->name('custom-requests.complete');
+        Route::post('/custom-requests/{id}/cancel', [App\Http\Controllers\CustomRequestController::class, 'cancel'])->name('custom-requests.cancel');
+    });
+});
+
 Route::get('/search', ['uses' => 'SearchController@index', 'as' => 'search.get']);
 Route::get('/search/posts', ['uses' => 'SearchController@getSearchPosts', 'as' => 'search.posts']);
 Route::get('/search/users', ['uses' => 'SearchController@getUsersSearch', 'as' => 'search.users']);

@@ -19,9 +19,9 @@ class HomeController extends Controller
     public function index()
     {
 
-        if (!InstallerServiceProvider::checkIfInstalled()) {
-            return Redirect::to(route('installer.install'));
-        }
+        // if (!InstallerServiceProvider::checkIfInstalled()) {
+        //     return Redirect::to(route('installer.install'));
+        // }
 
         JavaScript::put(['skipDefaultScrollInits' => true]);
 
