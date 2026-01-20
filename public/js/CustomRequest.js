@@ -6,30 +6,42 @@ var CustomRequest = {
      * Show the create custom request modal
      */
     showCreateModal: function() {
-        // Use Bootstrap modal if available, otherwise use fallback
+        const modalElement = document.getElementById('createCustomRequestModal');
+        if (!modalElement) return;
+        
+        // Try Bootstrap 5 first
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            const modalElement = document.getElementById('createCustomRequestModal');
-            if (modalElement) {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-            }
-        } else if (typeof $ !== 'undefined' && $.fn.modal) {
-            $('#createCustomRequestModal').modal('show');
-        } else {
-            // Fallback
-            const modal = document.getElementById('createCustomRequestModal');
-            if (modal) {
-                modal.style.display = 'block';
-                modal.classList.add('show');
-                document.body.classList.add('modal-open');
-                
-                // Add backdrop
-                if (!document.querySelector('.modal-backdrop')) {
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop fade show';
-                    document.body.appendChild(backdrop);
+            try {
+                // Try to get existing instance first
+                let modal = bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                    // If no instance exists, create a new one
+                    modal = new bootstrap.Modal(modalElement);
                 }
+                modal.show();
+                return;
+            } catch (e) {
+                // If Bootstrap 5 fails, fall through to jQuery
+                console.log('Bootstrap 5 modal failed, trying jQuery');
             }
+        }
+        
+        // Try jQuery/Bootstrap 4
+        if (typeof $ !== 'undefined' && $.fn.modal) {
+            $('#createCustomRequestModal').modal('show');
+            return;
+        }
+        
+        // Fallback - manual show
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        // Add backdrop
+        if (!document.querySelector('.modal-backdrop')) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
         }
     },
 
@@ -37,29 +49,40 @@ var CustomRequest = {
      * Hide the create custom request modal
      */
     hideCreateModal: function() {
+        const modalElement = document.getElementById('createCustomRequestModal');
+        if (!modalElement) return;
+        
+        // Try Bootstrap 5 first
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            const modalElement = document.getElementById('createCustomRequestModal');
-            if (modalElement) {
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                if (modal) {
-                    modal.hide();
+            try {
+                // Try to get existing instance
+                let modal = bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                    // If no instance exists, create a new one
+                    modal = new bootstrap.Modal(modalElement);
                 }
+                modal.hide();
+                return;
+            } catch (e) {
+                // If Bootstrap 5 fails, fall through to jQuery
+                console.log('Bootstrap 5 modal failed, trying jQuery');
             }
-        } else if (typeof $ !== 'undefined' && $.fn.modal) {
+        }
+        
+        // Try jQuery/Bootstrap 4
+        if (typeof $ !== 'undefined' && $.fn.modal) {
             $('#createCustomRequestModal').modal('hide');
-        } else {
-            // Fallback
-            const modal = document.getElementById('createCustomRequestModal');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.classList.remove('show');
-                document.body.classList.remove('modal-open');
-                
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.parentNode.removeChild(backdrop);
-                }
-            }
+            return;
+        }
+        
+        // Fallback - manual hide
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.parentNode.removeChild(backdrop);
         }
     },
 
@@ -119,16 +142,12 @@ var CustomRequest = {
 
         // Validate required fields
         if (!data.creator_id && !data.creator_username) {
-            alert('Please enter and select a creator from the search results');
-            return;
-        }
-        
-        // Warn if creator_id is not set but username is provided
-        if (!data.creator_id && data.creator_username) {
-            const confirmSubmit = confirm('Please select a creator from the search results. Click on a creator name to select them. Do you want to continue anyway?');
-            if (!confirmSubmit) {
-                return;
+            if (typeof launchToast !== 'undefined') {
+                launchToast('danger', 'Error', 'Please enter and select a creator from the search results');
+            } else {
+                alert('Please enter and select a creator from the search results');
             }
+            return;
         }
 
         // Show loading state
@@ -141,36 +160,69 @@ var CustomRequest = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(async response => {
+            // Get content type to check if it's JSON
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+            
+            // Try to parse as JSON if it's JSON, otherwise get text
+            let responseData;
+            if (isJson) {
+                try {
+                    responseData = await response.json();
+                } catch (e) {
+                    // If JSON parsing fails, treat as error
+                    throw { message: 'Invalid response from server' };
+                }
+            } else {
+                // If not JSON, get text (might be HTML error page)
+                const text = await response.text();
+                throw { message: 'Server error occurred. Please try again.' };
+            }
+            
+            // Check if response is ok (status 200-299)
+            if (response.ok) {
+                return responseData;
+            } else {
+                // For error responses, throw the error data
+                throw responseData;
+            }
+        })
         .then(data => {
             if (data.success) {
-                // Show success message
-                if (typeof launchToast !== 'undefined') {
-                    launchToast('success', 'Success', data.message || 'Custom request created successfully!');
-                } else {
-                    alert(data.message || 'Custom request created successfully!');
-                }
-                
                 // Reset form
                 form.reset();
                 
-                // Hide modal
+                // Clear creator selection indicator
+                const creatorIndicator = document.getElementById('creator_selected_indicator');
+                const creatorResults = document.getElementById('creator_search_results');
+                if (creatorIndicator) creatorIndicator.style.display = 'none';
+                if (creatorResults) creatorResults.style.display = 'none';
+                
+                // Hide modal immediately
                 CustomRequest.hideCreateModal();
                 
-                // Reload page or redirect
+                // Show success toast (no alert)
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('success', 'Success', data.message || 'Custom request created successfully!');
+                }
+                
+                // Redirect after a short delay
                 setTimeout(function() {
                     window.location.href = '/custom-requests/my-requests';
-                }, 1000);
+                }, 500);
             } else {
                 // Show error
+                const errorMsg = data.message || 'Failed to create request';
                 if (typeof launchToast !== 'undefined') {
-                    launchToast('danger', 'Error', data.message || 'Failed to create request');
+                    launchToast('danger', 'Error', errorMsg);
                 } else {
-                    alert(data.message || 'Failed to create request');
+                    alert(errorMsg);
                 }
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -178,10 +230,12 @@ var CustomRequest = {
         })
         .catch(error => {
             console.error('Error:', error);
+            // Show error message from response if available
+            const errorMessage = (error && error.message) ? error.message : 'An error occurred. Please try again.';
             if (typeof launchToast !== 'undefined') {
-                launchToast('danger', 'Error', 'An error occurred. Please try again.');
+                launchToast('danger', 'Error', errorMessage);
             } else {
-                alert('An error occurred. Please try again.');
+                alert(errorMessage);
             }
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CustomRequest;
 use App\Models\CustomRequestContribution;
 use App\Model\Transaction;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -33,6 +34,21 @@ class CustomRequestController extends Controller
         $customRequest = CustomRequest::with(['creator', 'requester', 'contributions.contributor'])
             ->findOrFail($id);
 
+        // Security check: Only allow viewing if user is the creator, requester, or it's a marketplace/public request
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $isCreator = $customRequest->creator_id == $userId;
+            $isRequester = $customRequest->requester_id == $userId;
+            $isPublic = $customRequest->type == 'public' || $customRequest->is_marketplace;
+            
+            if (!$isCreator && !$isRequester && !$isPublic) {
+                abort(403, 'You do not have permission to view this request.');
+            }
+        } elseif ($customRequest->type != 'public' && !$customRequest->is_marketplace) {
+            // Private requests require authentication
+            return redirect()->route('login');
+        }
+
         return view('custom-requests.show', compact('customRequest'));
     }
 
@@ -41,6 +57,10 @@ class CustomRequestController extends Controller
      */
     public function store(Request $request)
     {
+        // Ensure we always return JSON
+        if (!$request->expectsJson() && !$request->ajax()) {
+            $request->headers->set('Accept', 'application/json');
+        }
         // Handle creator lookup by username or ID
         $creatorId = $request->input('creator_id');
         $creatorUsername = $request->input('creator_username');
@@ -51,15 +71,55 @@ class CustomRequestController extends Controller
             // Remove @ if user typed it
             $username = ltrim($username, '@');
             
-            // Try exact match first
-            $creator = \App\User::where('username', $username)->first();
+            if (empty($username)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please enter a creator username and select from the search results that appear below.'
+                ], 422);
+            }
             
-            // If not found, try case-insensitive match
+            // Search using the same logic as the search function
+            // Search by username, name, and bio (matching getSearchUsers logic)
+            $query = User::where('public_profile', 1)
+                ->where('role_id', 2) // Only creators
+                ->where(function ($q) use ($username) {
+                    $q->where('username', 'like', '%' . $username . '%')
+                      ->orWhere('bio', 'like', '%' . $username . '%')
+                      ->orWhere('name', 'like', '%' . $username . '%');
+                });
+            
+            // Exclude current user from search if logged in
+            if (Auth::check()) {
+                $query->where('id', '<>', Auth::id());
+            }
+            
+            $creator = $query->first();
+            
+            // If still not found, try without role_id restriction (in case role_id is not set correctly)
             if (!$creator) {
-                $creator = \App\User::whereRaw('LOWER(username) = ?', [strtolower($username)])->first();
+                $query2 = User::where('public_profile', 1)
+                    ->where(function ($q) use ($username) {
+                        $q->where('username', 'like', '%' . $username . '%')
+                          ->orWhere('bio', 'like', '%' . $username . '%')
+                          ->orWhere('name', 'like', '%' . $username . '%');
+                    });
+                
+                // Exclude current user from search if logged in
+                if (Auth::check()) {
+                    $query2->where('id', '<>', Auth::id());
+                }
+                
+                $creator = $query2->first();
             }
             
             if ($creator) {
+                // Ensure user is not trying to request from themselves
+                if ($creator->id == Auth::id()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You cannot create a custom request for yourself. Please select a different creator.'
+                    ], 422);
+                }
                 $creatorId = $creator->id;
             } else {
                 return response()->json([
@@ -91,7 +151,27 @@ class CustomRequestController extends Controller
         if (!$creatorId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Creator is required. Please select a creator from the search results.'
+                'message' => 'Creator is required. Please enter a username and select from the search results.'
+            ], 422);
+        }
+        
+        // Final validation: ensure creator exists and is valid
+        $creator = User::where('id', $creatorId)
+            ->where('public_profile', 1)
+            ->first();
+            
+        if (!$creator) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected creator is not valid. Please select a creator from the search results.'
+            ], 422);
+        }
+        
+        // Ensure user is not trying to request from themselves
+        if ($creator->id == Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot create a custom request for yourself. Please select a different creator.'
             ], 422);
         }
 
@@ -117,7 +197,7 @@ class CustomRequestController extends Controller
             'success' => true,
             'message' => 'Custom request created successfully',
             'request' => $customRequest
-        ]);
+        ], 200);
     }
 
     /**
@@ -188,12 +268,17 @@ class CustomRequestController extends Controller
      */
     public function accept($id)
     {
+        // Ensure we always return JSON
+        if (!request()->expectsJson() && !request()->ajax()) {
+            request()->headers->set('Accept', 'application/json');
+        }
+
         $customRequest = CustomRequest::findOrFail($id);
 
         if ($customRequest->creator_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized. You can only accept requests sent to you.'
             ], 403);
         }
 
@@ -202,8 +287,8 @@ class CustomRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Request accepted'
-        ]);
+            'message' => 'Request accepted successfully!'
+        ], 200);
     }
 
     /**
@@ -211,12 +296,17 @@ class CustomRequestController extends Controller
      */
     public function reject($id)
     {
+        // Ensure we always return JSON
+        if (!request()->expectsJson() && !request()->ajax()) {
+            request()->headers->set('Accept', 'application/json');
+        }
+
         $customRequest = CustomRequest::findOrFail($id);
 
         if ($customRequest->creator_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized. You can only reject requests sent to you.'
             ], 403);
         }
 
@@ -225,8 +315,8 @@ class CustomRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Request rejected'
-        ]);
+            'message' => 'Request rejected successfully!'
+        ], 200);
     }
 
     /**
@@ -234,12 +324,17 @@ class CustomRequestController extends Controller
      */
     public function complete($id)
     {
+        // Ensure we always return JSON
+        if (!request()->expectsJson() && !request()->ajax()) {
+            request()->headers->set('Accept', 'application/json');
+        }
+
         $customRequest = CustomRequest::findOrFail($id);
 
         if ($customRequest->creator_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized. You can only complete requests you accepted.'
             ], 403);
         }
 
@@ -248,8 +343,8 @@ class CustomRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Request marked as completed'
-        ]);
+            'message' => 'Request marked as completed successfully!'
+        ], 200);
     }
 
     /**
@@ -280,18 +375,26 @@ class CustomRequestController extends Controller
      */
     public function myRequests(Request $request)
     {
+        // Ensure user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+        
         $type = $request->get('type', 'all'); // 'created', 'received', 'all'
+        $userId = Auth::id();
         
         $query = CustomRequest::with(['creator', 'requester', 'contributions']);
 
+        // Always filter by logged-in user to prevent seeing other users' requests
         if ($type === 'created') {
-            $query->where('requester_id', Auth::id());
+            $query->where('requester_id', $userId);
         } elseif ($type === 'received') {
-            $query->where('creator_id', Auth::id());
+            $query->where('creator_id', $userId);
         } else {
-            $query->where(function($q) {
-                $q->where('requester_id', Auth::id())
-                  ->orWhere('creator_id', Auth::id());
+            // Show all requests where user is either requester or creator
+            $query->where(function($q) use ($userId) {
+                $q->where('requester_id', $userId)
+                  ->orWhere('creator_id', $userId);
             });
         }
 

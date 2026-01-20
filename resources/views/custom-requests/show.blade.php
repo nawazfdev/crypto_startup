@@ -3,177 +3,806 @@
 @section('page_title', $customRequest->title)
 
 @section('content')
-<div class="container pt-5 pb-5">
-    <div class="row">
-        <div class="col-12 col-md-8">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h1 class="card-title">{{ $customRequest->title }}</h1>
-                        <span class="badge badge-{{ $customRequest->status == 'accepted' ? 'success' : ($customRequest->status == 'completed' ? 'info' : 'secondary') }}">
-                            {{ ucfirst($customRequest->status) }}
-                        </span>
-                    </div>
-
-                    <div class="mb-3">
-                        <p class="text-muted">
-                            {{ __('By') }}: <a href="{{ route('profile', ['username' => $customRequest->creator->username]) }}">{{ $customRequest->creator->name }}</a>
-                        </p>
-                        @if($customRequest->requester)
-                            <p class="text-muted">
-                                {{ __('Requested by') }}: <a href="{{ route('profile', ['username' => $customRequest->requester->username]) }}">{{ $customRequest->requester->name }}</a>
-                            </p>
-                        @endif
-                    </div>
-
-                    <div class="mb-4">
-                        <h5>{{ __('Description') }}</h5>
-                        <p>{{ $customRequest->description }}</p>
-                    </div>
-
-                    @if($customRequest->is_marketplace)
-                        <div class="mb-4">
-                            <h5>{{ __('Funding Progress') }}</h5>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>{{ __('Goal') }}: <strong>${{ number_format($customRequest->goal_amount, 2) }}</strong></span>
-                                <span>{{ __('Raised') }}: <strong>${{ number_format($customRequest->current_amount, 2) }}</strong></span>
+<div class="container-fluid px-4 py-5">
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="request-hero-card">
+                <div class="hero-background">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h1 class="hero-title mb-2">{{ $customRequest->title }}</h1>
+                                <div class="hero-meta d-flex flex-wrap align-items-center gap-3 text-white-50">
+                                    <span><i class="far fa-clock mr-1"></i>{{ $customRequest->created_at->diffForHumans() }}</span>
+                                    @if($customRequest->deadline)
+                                        <span><i class="far fa-calendar-alt mr-1"></i>{{ __('Due') }}: {{ $customRequest->deadline->format('M d, Y') }}</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar" role="progressbar" 
-                                     style="width: {{ $customRequest->progress_percentage }}%"
-                                     aria-valuenow="{{ $customRequest->progress_percentage }}" 
-                                     aria-valuemin="0" 
-                                     aria-valuemax="100">
-                                    {{ number_format($customRequest->progress_percentage, 1) }}%
+                            <div class="status-badge-large">
+                                @if($customRequest->status == 'accepted')
+                                    <span class="badge badge-success badge-lg">
+                                        <i class="fas fa-play-circle mr-1"></i>{{ __('Active') }}
+                                    </span>
+                                @elseif($customRequest->status == 'completed')
+                                    <span class="badge badge-info badge-lg">
+                                        <i class="fas fa-trophy mr-1"></i>{{ __('Completed') }}
+                                    </span>
+                                @elseif($customRequest->status == 'rejected')
+                                    <span class="badge badge-danger badge-lg">
+                                        <i class="fas fa-times-circle mr-1"></i>{{ __('Rejected') }}
+                                    </span>
+                                @elseif($customRequest->status == 'cancelled')
+                                    <span class="badge badge-secondary badge-lg">
+                                        <i class="fas fa-ban mr-1"></i>{{ __('Cancelled') }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-warning badge-lg">
+                                        <i class="fas fa-clock mr-1"></i>{{ __('Pending') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- User Info in Hero -->
+                        <div class="hero-users d-flex flex-wrap align-items-center gap-4">
+                            <div class="user-info-item d-flex align-items-center">
+                                <div class="user-avatar-lg mr-3">
+                                    @if($customRequest->creator->avatar)
+                                        <img src="{{ asset('storage/' . $customRequest->creator->avatar) }}" alt="{{ $customRequest->creator->name }}" class="rounded-circle">
+                                    @else
+                                        <div class="avatar-placeholder-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <div class="text-white-50 small">{{ __('Creator') }}</div>
+                                    <a href="{{ route('profile', ['username' => $customRequest->creator->username]) }}" class="text-white text-decoration-none font-weight-bold">
+                                        {{ $customRequest->creator->name }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            @if($customRequest->requester)
+                                <div class="user-info-item d-flex align-items-center">
+                                    <div class="user-avatar-lg mr-3">
+                                        @if($customRequest->requester->avatar)
+                                            <img src="{{ asset('storage/' . $customRequest->requester->avatar) }}" alt="{{ $customRequest->requester->name }}" class="rounded-circle">
+                                        @else
+                                            <div class="avatar-placeholder-lg rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div class="text-white-50 small">{{ __('Requester') }}</div>
+                                        <a href="{{ route('profile', ['username' => $customRequest->requester->username]) }}" class="text-white text-decoration-none font-weight-bold">
+                                            {{ $customRequest->requester->name }}
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Type Badge -->
+                            <div class="type-indicator">
+                                <span class="badge badge-light badge-lg">
+                                    @if($customRequest->type == 'marketplace')
+                                        <i class="fas fa-store mr-1"></i>{{ __('Marketplace Request') }}
+                                    @elseif($customRequest->type == 'private')
+                                        <i class="fas fa-lock mr-1"></i>{{ __('Private Request') }}
+                                    @else
+                                        <i class="fas fa-globe mr-1"></i>{{ __('Public Request') }}
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <!-- Main Content Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <!-- Description Section -->
+                    <div class="content-section mb-4">
+                        <h4 class="section-title mb-3">
+                            <i class="fas fa-align-left text-primary mr-2"></i>{{ __('Description') }}
+                        </h4>
+                        <div class="description-content">
+                            <p class="lead">{{ $customRequest->description }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Progress/Price Section -->
+                    @if($customRequest->is_marketplace)
+                        <div class="content-section mb-4">
+                            <h4 class="section-title mb-4">
+                                <i class="fas fa-chart-line text-success mr-2"></i>{{ __('Funding Progress') }}
+                            </h4>
+                            <div class="progress-hero mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="progress-stats">
+                                        <h3 class="progress-amount text-success mb-0">
+                                            ${{ number_format($customRequest->current_amount, 0) }}
+                                        </h3>
+                                        <small class="text-muted">{{ __('Raised') }}</small>
+                                    </div>
+                                    <div class="progress-stats text-right">
+                                        <h3 class="progress-amount text-muted mb-0">
+                                            ${{ number_format($customRequest->goal_amount, 0) }}
+                                        </h3>
+                                        <small class="text-muted">{{ __('Goal') }}</small>
+                                    </div>
+                                </div>
+                                <div class="progress progress-xl mb-3">
+                                    <div class="progress-bar progress-bar-hero" role="progressbar"
+                                         style="width: {{ min(100, $customRequest->progress_percentage) }}%"
+                                         aria-valuenow="{{ $customRequest->progress_percentage }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <span class="progress-percentage h4 text-primary font-weight-bold">
+                                        {{ number_format($customRequest->progress_percentage, 1) }}%
+                                    </span>
+                                    <small class="text-muted d-block">{{ __('Complete') }}</small>
                                 </div>
                             </div>
                         </div>
                     @else
-                        <div class="mb-4">
-                            <h5>{{ __('Price') }}</h5>
-                            <p class="h4">${{ number_format($customRequest->price, 2) }}</p>
+                        <div class="content-section mb-4">
+                            <h4 class="section-title mb-3">
+                                <i class="fas fa-dollar-sign text-success mr-2"></i>{{ __('Price') }}
+                            </h4>
+                            <div class="price-display">
+                                <span class="price-amount">${{ number_format($customRequest->price, 2) }}</span>
+                                <small class="text-muted d-block">{{ __('Fixed price for this request') }}</small>
+                            </div>
                         </div>
                     @endif
 
+                    <!-- Action Buttons -->
                     @auth
-                        @if($customRequest->creator_id == Auth::id())
-                            <div class="d-flex gap-2 mb-3">
-                                @if($customRequest->status == 'pending')
-                                    <form action="{{ route('custom-requests.accept', $customRequest->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success">{{ __('Accept') }}</button>
-                                    </form>
-                                    <form action="{{ route('custom-requests.reject', $customRequest->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-danger">{{ __('Reject') }}</button>
-                                    </form>
-                                @endif
-                                @if($customRequest->status == 'accepted')
-                                    <form action="{{ route('custom-requests.complete', $customRequest->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary">{{ __('Mark as Completed') }}</button>
-                                    </form>
-                                @endif
-                            </div>
-                        @elseif($customRequest->status == 'accepted' && $customRequest->is_marketplace)
-                            <button class="btn btn-primary btn-lg contribute-btn" data-request-id="{{ $customRequest->id }}">
-                                {{ __('Contribute Now') }}
-                            </button>
-                        @endif
+                        <div class="action-section">
+                            @if($customRequest->creator_id == Auth::id())
+                                <div class="creator-actions mb-4">
+                                    <h5 class="mb-3">{{ __('Manage Request') }}</h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @if($customRequest->status == 'pending')
+                                            <button type="button" class="btn btn-success btn-lg px-4" onclick="handleRequestAction('accept', {{ $customRequest->id }})">
+                                                <i class="fas fa-check-circle mr-2"></i>{{ __('Accept Request') }}
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-lg px-4" onclick="handleRequestAction('reject', {{ $customRequest->id }})">
+                                                <i class="fas fa-times-circle mr-2"></i>{{ __('Reject Request') }}
+                                            </button>
+                                        @endif
+                                        @if($customRequest->status == 'accepted')
+                                            <button type="button" class="btn btn-primary btn-lg px-4" onclick="handleRequestAction('complete', {{ $customRequest->id }})">
+                                                <i class="fas fa-check-double mr-2"></i>{{ __('Mark as Completed') }}
+                                            </button>
+                                        @endif
+                                        @if(in_array($customRequest->status, ['pending', 'accepted']))
+                                            <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="cancelRequest({{ $customRequest->id }})">
+                                                <i class="fas fa-ban mr-2"></i>{{ __('Cancel Request') }}
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @elseif($customRequest->status == 'accepted' && $customRequest->is_marketplace)
+                                <div class="contribution-section">
+                                    <button class="btn btn-primary btn-xl contribute-btn w-100" data-request-id="{{ $customRequest->id }}">
+                                        <i class="fas fa-hand-holding-heart mr-2"></i>{{ __('Contribute to This Request') }}
+                                        <div class="small opacity-75">{{ __('Help make this happen!') }}</div>
+                                    </button>
+                                </div>
+                            @elseif($customRequest->requester_id == Auth::id() && in_array($customRequest->status, ['pending', 'accepted']))
+                                <div class="requester-actions">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        {{ __('You created this request. The creator will respond soon.') }}
+                                        @if($customRequest->status == 'pending')
+                                            <button type="button" class="btn btn-sm btn-outline-danger ml-3" onclick="cancelRequest({{ $customRequest->id }})">
+                                                {{ __('Cancel Request') }}
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     @endauth
                 </div>
             </div>
 
+            <!-- Contributions Section -->
             @if($customRequest->is_marketplace && $customRequest->contributions->count() > 0)
-                <div class="card">
-                    <div class="card-body">
-                        <h5>{{ __('Contributions') }}</h5>
-                        <div class="list-group">
-                            @foreach($customRequest->contributions->where('status', 'completed') as $contribution)
-                                <div class="list-group-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>{{ $contribution->contributor->name }}</strong>
-                                            <span class="text-muted">contributed</span>
-                                            <strong>${{ number_format($contribution->amount, 2) }}</strong>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-hand-holding-heart text-success mr-2"></i>{{ __('Contributions') }}
+                                <span class="badge badge-success ml-2">{{ $customRequest->contributions->where('status', 'completed')->count() }}</span>
+                            </h4>
+                            <small class="text-muted">{{ __('Recent supporters') }}</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="contributions-list">
+                            @foreach($customRequest->contributions->where('status', 'completed')->take(10) as $contribution)
+                                <div class="contribution-item p-3 border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <div class="contributor-avatar mr-3">
+                                            @if($contribution->contributor->avatar)
+                                                <img src="{{ asset('storage/' . $contribution->contributor->avatar) }}" alt="{{ $contribution->contributor->name }}" class="rounded-circle">
+                                            @else
+                                                <div class="avatar-placeholder-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            @endif
                                         </div>
-                                        <small class="text-muted">{{ $contribution->created_at->diffForHumans() }}</small>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <div>
+                                                    <strong class="text-dark">{{ $contribution->contributor->name }}</strong>
+                                                    <small class="text-muted ml-2">
+                                                        <i class="far fa-clock mr-1"></i>{{ $contribution->created_at->diffForHumans() }}
+                                                    </small>
+                                                </div>
+                                                <div class="contribution-amount">
+                                                    <span class="badge badge-success badge-lg">
+                                                        <i class="fas fa-dollar-sign mr-1"></i>${{ number_format($contribution->amount, 2) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            @if($contribution->message)
+                                                <div class="contribution-message">
+                                                    <p class="text-muted mb-0 small">"{{ Str::limit($contribution->message, 150) }}"</p>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
-                                    @if($contribution->message)
-                                        <p class="mb-0 mt-2 text-muted">{{ $contribution->message }}</p>
-                                    @endif
                                 </div>
                             @endforeach
                         </div>
+                        @if($customRequest->contributions->where('status', 'completed')->count() > 10)
+                            <div class="text-center p-3">
+                                <small class="text-muted">{{ __('And') }} {{ $customRequest->contributions->where('status', 'completed')->count() - 10 }} {{ __('more contributions...') }}</small>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
         </div>
 
-        <div class="col-12 col-md-4">
-            <div class="card">
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-4">
+            <!-- Request Details Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle text-primary mr-2"></i>{{ __('Request Details') }}
+                    </h5>
+                </div>
                 <div class="card-body">
-                    <h5>{{ __('Request Details') }}</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <strong>{{ __('Type') }}:</strong> 
-                            {{ ucfirst($customRequest->type) }}
-                        </li>
-                        <li class="mb-2">
-                            <strong>{{ __('Status') }}:</strong> 
-                            {{ ucfirst($customRequest->status) }}
-                        </li>
-                        <li class="mb-2">
-                            <strong>{{ __('Created') }}:</strong> 
-                            {{ $customRequest->created_at->format('M d, Y') }}
-                        </li>
+                    <div class="details-list">
+                        <div class="detail-item mb-3">
+                            <div class="detail-label text-muted small">{{ __('Request Type') }}</div>
+                            <div class="detail-value">
+                                @if($customRequest->type == 'marketplace')
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-store mr-1"></i>{{ __('Marketplace') }}
+                                    </span>
+                                @elseif($customRequest->type == 'private')
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-lock mr-1"></i>{{ __('Private') }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-globe mr-1"></i>{{ __('Public') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="detail-item mb-3">
+                            <div class="detail-label text-muted small">{{ __('Status') }}</div>
+                            <div class="detail-value">
+                                @if($customRequest->status == 'accepted')
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-play-circle mr-1"></i>{{ __('Active') }}
+                                    </span>
+                                @elseif($customRequest->status == 'completed')
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-check-circle mr-1"></i>{{ __('Completed') }}
+                                    </span>
+                                @elseif($customRequest->status == 'rejected')
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-times-circle mr-1"></i>{{ __('Rejected') }}
+                                    </span>
+                                @elseif($customRequest->status == 'cancelled')
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-ban mr-1"></i>{{ __('Cancelled') }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock mr-1"></i>{{ __('Pending') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="detail-item mb-3">
+                            <div class="detail-label text-muted small">{{ __('Created') }}</div>
+                            <div class="detail-value">
+                                <i class="far fa-calendar-alt mr-2 text-muted"></i>
+                                {{ $customRequest->created_at->format('M d, Y \a\t g:i A') }}
+                            </div>
+                        </div>
+
                         @if($customRequest->deadline)
-                            <li class="mb-2">
-                                <strong>{{ __('Deadline') }}:</strong> 
-                                {{ $customRequest->deadline->format('M d, Y') }}
-                            </li>
+                            <div class="detail-item mb-3">
+                                <div class="detail-label text-muted small">{{ __('Deadline') }}</div>
+                                <div class="detail-value">
+                                    <i class="far fa-calendar-check mr-2 text-muted"></i>
+                                    {{ $customRequest->deadline->format('M d, Y') }}
+                                    @if($customRequest->deadline->isPast() && $customRequest->status == 'accepted')
+                                        <span class="badge badge-danger badge-sm ml-2">{{ __('Overdue') }}</span>
+                                    @elseif($customRequest->deadline->diffInDays() <= 7 && $customRequest->status == 'accepted')
+                                        <span class="badge badge-warning badge-sm ml-2">{{ __('Due Soon') }}</span>
+                                    @endif
+                                </div>
+                            </div>
                         @endif
-                    </ul>
+
+                        @if($customRequest->is_marketplace)
+                            <div class="detail-item">
+                                <div class="detail-label text-muted small">{{ __('Contributors') }}</div>
+                                <div class="detail-value">
+                                    <i class="fas fa-users mr-2 text-muted"></i>
+                                    {{ $customRequest->contributions->where('status', 'completed')->count() }} {{ __('supporters') }}
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
+
+            <!-- Quick Actions Card -->
+            @auth
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt text-warning mr-2"></i>{{ __('Quick Actions') }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="{{ route('custom-requests.marketplace') }}" class="btn btn-outline-primary btn-block mb-2">
+                                <i class="fas fa-store mr-2"></i>{{ __('Browse Marketplace') }}
+                            </a>
+                            <a href="{{ route('custom-requests.my-requests') }}" class="btn btn-outline-secondary btn-block mb-2">
+                                <i class="fas fa-list mr-2"></i>{{ __('My Requests') }}
+                            </a>
+                            <button type="button" class="btn btn-outline-success btn-block" onclick="CustomRequest.showCreateModal()">
+                                <i class="fas fa-plus-circle mr-2"></i>{{ __('Create New Request') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endauth
         </div>
     </div>
 </div>
 
 @auth
-<!-- Contribution Modal -->
+<!-- Enhanced Contribution Modal -->
 <div class="modal fade" id="contributeModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ __('Contribute to Request') }}</h5>
-                <button type="button" class="close" data-dismiss="modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient border-0">
+                <h5 class="modal-title font-weight-bold text-white">
+                    <i class="fas fa-hand-holding-heart mr-2"></i>{{ __('Support This Request') }}
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
             <form id="contributeForm">
-                <div class="modal-body">
+                <div class="modal-body p-4">
+                    <div class="request-preview-card mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="preview-icon mr-3">
+                                <i class="fas fa-lightbulb text-warning fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="font-weight-bold mb-1" id="modal-request-title">{{ $customRequest->title }}</h6>
+                                <p class="text-muted small mb-0">{{ __('Your contribution helps bring this idea to life!') }}</p>
+                            </div>
+                        </div>
+                        <div class="progress progress-sm mb-2">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ min(100, $customRequest->progress_percentage) }}%"
+                                 aria-valuenow="{{ $customRequest->progress_percentage }}"
+                                 aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ number_format($customRequest->progress_percentage, 1) }}% {{ __('funded') }}</small>
+                    </div>
+
                     <input type="hidden" id="request_id" name="request_id">
                     <div class="form-group">
-                        <label for="amount">{{ __('Amount') }} ($)</label>
-                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                        <label for="amount" class="font-weight-bold h6">
+                            <i class="fas fa-dollar-sign text-success mr-1"></i>{{ __('Your Contribution Amount') }}
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <small class="form-text text-muted">{{ __('Enter any amount you\'d like to contribute') }}</small>
                     </div>
                     <div class="form-group">
-                        <label for="message">{{ __('Message') }} ({{ __('Optional') }})</label>
-                        <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                        <label for="message" class="font-weight-bold h6">
+                            <i class="fas fa-comment-heart text-info mr-1"></i>{{ __('Encouraging Message') }} <small class="text-muted">({{ __('Optional') }})</small>
+                        </label>
+                        <textarea class="form-control" id="message" name="message" rows="3" placeholder="{{ __('Leave a supportive message for the creator...') }}"></textarea>
+                        <small class="form-text text-muted">{{ __('Your message will be displayed publicly with your contribution') }}</small>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Contribute') }}</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>{{ __('Maybe Later') }}
+                    </button>
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-heart mr-1"></i>{{ __('Make My Contribution') }}
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endauth
+
+<style>
+/* Hero Section */
+.request-hero-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.hero-background {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    min-height: 250px;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    color: white;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero-meta {
+    font-size: 0.9rem;
+}
+
+.status-badge-large .badge {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.hero-users {
+    margin-top: 2rem;
+}
+
+.user-avatar-lg img,
+.avatar-placeholder-lg {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(255,255,255,0.3);
+}
+
+.avatar-placeholder-lg {
+    font-size: 1.5rem;
+}
+
+/* Content Sections */
+.content-section {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.content-section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.description-content {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+/* Progress Hero */
+.progress-hero {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    color: white;
+    text-align: center;
+}
+
+.progress-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.progress-xl {
+    height: 12px;
+    border-radius: 10px;
+    background-color: rgba(255,255,255,0.3);
+    overflow: hidden;
+}
+
+.progress-bar-hero {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+.progress-percentage {
+    margin-top: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Price Display */
+.price-display {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.price-amount {
+    font-size: 3rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Action Buttons */
+.btn-xl {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-xl::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-xl:hover::before {
+    left: 100%;
+}
+
+/* Contributions List */
+.contributions-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.contribution-item:hover {
+    background-color: #f8f9fa;
+}
+
+.contributor-avatar img,
+.avatar-placeholder-sm {
+    width: 40px;
+    height: 40px;
+}
+
+.contribution-amount .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.contribution-message {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+/* Details Sidebar */
+.details-list .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.detail-label {
+    flex: 0 0 40%;
+    font-weight: 500;
+}
+
+.detail-value {
+    flex: 1;
+    text-align: right;
+}
+
+.detail-value .badge {
+    font-size: 0.8rem;
+}
+
+/* Quick Actions */
+.quick-actions .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Modal Styles */
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.request-preview-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.preview-icon {
+    opacity: 0.9;
+}
+
+.progress-sm {
+    height: 6px;
+    border-radius: 3px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content {
+        padding: 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-users {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .progress-hero {
+        padding: 1.5rem;
+    }
+
+    .progress-amount {
+        font-size: 2rem;
+    }
+
+    .price-display {
+        padding: 1.5rem;
+    }
+
+    .price-amount {
+        font-size: 2rem;
+    }
+
+    .details-list .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detail-value {
+        text-align: left;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .hero-background {
+        min-height: 200px;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .status-badge-large .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-xl {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Loading Animation */
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.btn-xl:hover {
+    animation: shimmer 1.5s infinite;
+}
+
+/* Badge enhancements */
+.badge-lg {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced contribution modal functionality
     const contributeBtn = document.querySelector('.contribute-btn');
     if (contributeBtn) {
         const contributeModal = new bootstrap.Modal(document.getElementById('contributeModal'));
@@ -191,10 +820,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const amount = document.getElementById('amount').value;
             const message = document.getElementById('message').value;
 
+            // Show loading state
+            const submitBtn = contributeForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>{{ __("Processing Contribution...") }}';
+
             fetch(`/custom-requests/${requestId}/contribute`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
@@ -202,22 +838,172 @@ document.addEventListener('DOMContentLoaded', function() {
                     message: message
                 })
             })
-            .then(response => response.json())
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                const isJson = contentType && contentType.includes('application/json');
+
+                if (isJson) {
+                    return response.json();
+                } else {
+                    throw { message: '{{ __("Invalid response from server") }}' };
+                }
+            })
             .then(data => {
                 if (data.success) {
-                    alert('Contribution added successfully!');
-                    location.reload();
+                    // Show success message
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Thank you for your contribution!") }}');
+                    } else {
+                        alert(data.message || '{{ __("Thank you for your contribution!") }}');
+                    }
+
+                    contributeModal.hide();
+                    setTimeout(() => location.reload(), 1500);
                 } else {
-                    alert('Error: ' + data.message);
+                    // Show error
+                    const errorMsg = data.message || '{{ __("Failed to process contribution") }}';
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('danger', '{{ __("Error") }}', errorMsg);
+                    } else {
+                        alert('{{ __("Error") }}: ' + errorMsg);
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert(errorMsg);
+                }
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             });
         });
     }
+
+    // Enhanced request action handlers
+    window.handleRequestAction = function(action, requestId) {
+        const actionMessages = {
+            'accept': '{{ __("Accepting request...") }}',
+            'reject': '{{ __("Rejecting request...") }}',
+            'complete': '{{ __("Completing request...") }}'
+        };
+
+        const actionText = actionMessages[action] || '{{ __("Processing...") }}';
+
+        // Find and disable the button
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + actionText;
+
+        fetch(`/custom-requests/${requestId}/${action}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+
+            if (isJson) {
+                return response.json();
+            } else {
+                throw { message: '{{ __("Invalid response from server") }}' };
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const successMessages = {
+                    'accept': '{{ __("Request accepted successfully!") }}',
+                    'reject': '{{ __("Request rejected successfully!") }}',
+                    'complete': '{{ __("Request marked as completed!") }}'
+                };
+                const successMsg = data.message || successMessages[action] || '{{ __("Action completed successfully!") }}';
+
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('success', '{{ __("Success") }}', successMsg);
+                } else {
+                    alert(successMsg);
+                }
+
+                // Reload page after short delay to show updated status
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                const errorMsg = data.message || `{{ __("Failed to") }} ${action} {{ __("request") }}`;
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert('{{ __("Error") }}: ' + errorMsg);
+                }
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+            if (typeof launchToast !== 'undefined') {
+                launchToast('danger', '{{ __("Error") }}', errorMsg);
+            } else {
+                alert(errorMsg);
+            }
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    };
+
+    // Cancel request function
+    window.cancelRequest = function(requestId) {
+        if (confirm('{{ __("Are you sure you want to cancel this request? This action cannot be undone.") }}')) {
+            fetch(`/custom-requests/${requestId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Request cancelled successfully!") }}');
+                    } else {
+                        alert(data.message || '{{ __("Request cancelled successfully!") }}');
+                    }
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    const errorMsg = data.message || '{{ __("Failed to cancel request") }}';
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('danger', '{{ __("Error") }}', errorMsg);
+                    } else {
+                        alert('{{ __("Error") }}: ' + errorMsg);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorMsg = '{{ __("An error occurred. Please try again.") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert(errorMsg);
+                }
+            });
+        }
+    };
 });
 </script>
-@endauth
 @endsection
