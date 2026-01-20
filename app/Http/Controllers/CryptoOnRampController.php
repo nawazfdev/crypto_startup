@@ -97,7 +97,7 @@ class CryptoOnRampController extends Controller
     }
 
     /**
-     * Process credit card purchase of tokens
+     * Process crypto payment purchase of tokens
      */
     public function processPurchase(Request $request)
     {
@@ -106,8 +106,9 @@ class CryptoOnRampController extends Controller
         // Validate request
         $validator = Validator::make($request->all(), [
             'amount_usd' => 'required|numeric|min:5|max:50000',
-            'payment_method' => 'required|in:credit_card,debit_card,bank_transfer,paypal',
-            'card_token' => 'required_if:payment_method,credit_card,debit_card|string',
+            'payment_crypto' => 'required|in:bitcoin,ethereum,usdt,usdc',
+            'crypto_amount' => 'required|numeric|min:0.00000001',
+            'transaction_hash' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -117,7 +118,9 @@ class CryptoOnRampController extends Controller
         }
 
         $amountUsd = (float) $request->input('amount_usd');
-        $paymentMethod = $request->input('payment_method');
+        $paymentCrypto = $request->input('payment_crypto');
+        $cryptoAmount = (float) $request->input('crypto_amount');
+        $transactionHash = $request->input('transaction_hash');
         
         // Check transaction limits
         $limits = $this->getTransactionLimits($user);
@@ -147,35 +150,39 @@ class CryptoOnRampController extends Controller
         try {
             \DB::beginTransaction();
             
-            // Calculate fees
-            $processingFeePercent = 3.5; // 3.5% processing fee
-            $platformFeePercent = 1.0; // 1% platform fee
-            $totalFeePercent = $processingFeePercent + $platformFeePercent;
+            // Get or create payment crypto wallet for user
+            $paymentCryptoId = $this->getPaymentCryptoId($paymentCrypto);
+            if (!$paymentCryptoId) {
+                \DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Selected cryptocurrency not supported.')
+                    ->withInput();
+            }
             
-            $feeAmount = $amountUsd * ($totalFeePercent / 100);
+            // Add crypto to user's wallet (the crypto they paid with)
+            $paymentWallet = CryptoWallet::firstOrNew([
+                'user_id' => $user->id,
+                'cryptocurrency_id' => $paymentCryptoId,
+            ]);
+            $paymentWallet->balance = ($paymentWallet->balance ?? 0) + $cryptoAmount;
+            $paymentWallet->save();
+            
+            // Calculate fees (minimal for crypto payments)
+            $platformFeePercent = 1.0; // 1% platform fee only
+            $feeAmount = $amountUsd * ($platformFeePercent / 100);
             $netAmount = $amountUsd - $feeAmount;
             
             // Calculate tokens to receive
             $tokenPrice = $platformToken->current_price;
             $tokensToReceive = $netAmount / $tokenPrice;
             
-            // Process payment with Stripe (or configured payment processor)
-            $paymentResult = $this->processPayment($request, $amountUsd, $user);
-            
-            if (!$paymentResult['success']) {
-                \DB::rollBack();
-                return redirect()->back()
-                    ->with('error', $paymentResult['message'])
-                    ->withInput();
-            }
-            
-            // Update or create user's wallet
-            $wallet = CryptoWallet::firstOrNew([
+            // Update or create user's platform token wallet
+            $tokenWallet = CryptoWallet::firstOrNew([
                 'user_id' => $user->id,
                 'cryptocurrency_id' => $platformToken->id,
             ]);
-            $wallet->balance = ($wallet->balance ?? 0) + $tokensToReceive;
-            $wallet->save();
+            $tokenWallet->balance = ($tokenWallet->balance ?? 0) + $tokensToReceive;
+            $tokenWallet->save();
             
             // Update token supply
             $platformToken->available_supply -= $tokensToReceive;
@@ -183,8 +190,27 @@ class CryptoOnRampController extends Controller
             $platformToken->volume_24h += $amountUsd;
             $platformToken->save();
             
-            // Create transaction record
-            $transaction = CryptoTransaction::create([
+            // Create transaction record for crypto deposit
+            $cryptoTransaction = CryptoTransaction::create([
+                'cryptocurrency_id' => $paymentCryptoId,
+                'buyer_user_id' => $user->id,
+                'type' => 'deposit',
+                'amount' => $cryptoAmount,
+                'price_per_token' => $this->getCryptoPrice($paymentCrypto),
+                'total_price' => $amountUsd,
+                'fee_amount' => 0,
+                'status' => 'completed',
+                'transaction_hash' => $transactionHash ?: 'crypto_' . time() . '_' . substr(md5(uniqid()), 0, 16),
+                'notes' => json_encode([
+                    'payment_method' => $paymentCrypto,
+                    'crypto_amount' => $cryptoAmount,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]),
+            ]);
+            
+            // Create transaction record for token distribution
+            $tokenTransaction = CryptoTransaction::create([
                 'cryptocurrency_id' => $platformToken->id,
                 'buyer_user_id' => $user->id,
                 'type' => 'deposit',
@@ -193,45 +219,45 @@ class CryptoOnRampController extends Controller
                 'total_price' => $amountUsd,
                 'fee_amount' => $feeAmount,
                 'status' => 'completed',
-                'transaction_hash' => 'onramp_' . time() . '_' . substr(md5(uniqid()), 0, 16),
+                'transaction_hash' => 'token_dist_' . time() . '_' . substr(md5(uniqid()), 0, 16),
                 'notes' => json_encode([
-                    'payment_method' => $paymentMethod,
-                    'payment_reference' => $paymentResult['reference'] ?? null,
-                    'processing_fee' => $amountUsd * ($processingFeePercent / 100),
-                    'platform_fee' => $amountUsd * ($platformFeePercent / 100),
+                    'source' => 'crypto_payment',
+                    'source_crypto' => $paymentCrypto,
+                    'source_transaction_id' => $cryptoTransaction->id,
+                    'platform_fee' => $feeAmount,
                     'net_amount_usd' => $netAmount,
                     'token_price_at_purchase' => $tokenPrice,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
                 ]),
             ]);
             
             \DB::commit();
             
             // Log for compliance
-            Log::channel('crypto')->info('Crypto purchase completed', [
-                'transaction_id' => $transaction->id,
+            Log::channel('crypto')->info('Crypto payment purchase completed', [
+                'transaction_id' => $tokenTransaction->id,
                 'user_id' => $user->id,
                 'amount_usd' => $amountUsd,
+                'payment_crypto' => $paymentCrypto,
+                'crypto_amount' => $cryptoAmount,
                 'tokens_received' => $tokensToReceive,
-                'payment_method' => $paymentMethod,
                 'ip' => $request->ip(),
             ]);
             
             return redirect()->route('cryptocurrency.wallet')
                 ->with('success', sprintf(
-                    'Successfully purchased %s %s tokens for $%s!',
+                    'Successfully purchased %s %s tokens! Your %s payment has been added to your wallet.',
                     number_format($tokensToReceive, 4),
                     $platformToken->symbol,
-                    number_format($amountUsd, 2)
+                    strtoupper($paymentCrypto)
                 ));
                 
         } catch (\Exception $e) {
             \DB::rollBack();
             
-            Log::channel('crypto')->error('Crypto purchase failed', [
+            Log::channel('crypto')->error('Crypto payment purchase failed', [
                 'user_id' => $user->id,
                 'amount_usd' => $amountUsd,
+                'payment_crypto' => $paymentCrypto,
                 'error' => $e->getMessage(),
                 'ip' => $request->ip(),
             ]);
@@ -243,108 +269,51 @@ class CryptoOnRampController extends Controller
     }
 
     /**
-     * Process payment through Stripe or other payment processor
+     * Get payment cryptocurrency ID by symbol
      */
-    protected function processPayment(Request $request, $amount, $user)
+    protected function getPaymentCryptoId($cryptoSymbol)
     {
-        $paymentMethod = $request->input('payment_method');
-        
-        try {
-            // For credit/debit card, use Stripe
-            if (in_array($paymentMethod, ['credit_card', 'debit_card'])) {
-                return $this->processStripePayment($request, $amount, $user);
-            }
-            
-            // For PayPal
-            if ($paymentMethod === 'paypal') {
-                return $this->processPayPalPayment($request, $amount, $user);
-            }
-            
-            // For bank transfer (manual review required)
-            if ($paymentMethod === 'bank_transfer') {
-                return [
-                    'success' => true,
-                    'status' => 'pending',
-                    'reference' => 'bank_' . time() . '_' . rand(1000, 9999),
-                    'message' => 'Bank transfer initiated. Tokens will be credited after verification.',
-                ];
-            }
-            
-            return ['success' => false, 'message' => 'Unsupported payment method.'];
-            
-        } catch (\Exception $e) {
-            Log::channel('payments')->error('Payment processing failed', [
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'method' => $paymentMethod,
-                'error' => $e->getMessage(),
-            ]);
-            
-            return ['success' => false, 'message' => 'Payment processing failed. Please try again.'];
-        }
-    }
-
-    /**
-     * Process payment through Stripe
-     */
-    protected function processStripePayment(Request $request, $amount, $user)
-    {
-        // Check if Stripe is configured
-        if (!getSetting('payments.stripe_secret_key')) {
-            // Simulate successful payment for development
-            return [
-                'success' => true,
-                'reference' => 'stripe_sim_' . time() . '_' . rand(10000, 99999),
-                'message' => 'Payment processed successfully (simulation mode).',
-            ];
-        }
-        
-        try {
-            \Stripe\Stripe::setApiKey(getSetting('payments.stripe_secret_key'));
-            
-            // Create payment intent
-            $paymentIntent = \Stripe\PaymentIntent::create([
-                'amount' => (int)($amount * 100), // Stripe uses cents
-                'currency' => 'usd',
-                'payment_method' => $request->input('card_token'),
-                'confirm' => true,
-                'description' => 'Token purchase on ' . getSetting('site.name'),
-                'metadata' => [
-                    'user_id' => $user->id,
-                    'user_email' => $user->email,
-                    'type' => 'crypto_purchase',
-                ],
-            ]);
-            
-            if ($paymentIntent->status === 'succeeded') {
-                return [
-                    'success' => true,
-                    'reference' => $paymentIntent->id,
-                    'message' => 'Payment processed successfully.',
-                ];
-            }
-            
-            return ['success' => false, 'message' => 'Payment was not successful.'];
-            
-        } catch (\Stripe\Exception\CardException $e) {
-            return ['success' => false, 'message' => 'Card error: ' . $e->getMessage()];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Payment processing error.'];
-        }
-    }
-
-    /**
-     * Process PayPal payment
-     */
-    protected function processPayPalPayment(Request $request, $amount, $user)
-    {
-        // Implement PayPal integration here
-        // For now, simulate success
-        return [
-            'success' => true,
-            'reference' => 'paypal_' . time() . '_' . rand(10000, 99999),
-            'message' => 'PayPal payment processed.',
+        $cryptoMap = [
+            'bitcoin' => 'BTC',
+            'ethereum' => 'ETH',
+            'usdt' => 'USDT',
+            'usdc' => 'USDC',
         ];
+        
+        $symbol = $cryptoMap[$cryptoSymbol] ?? $cryptoSymbol;
+        
+        $crypto = Cryptocurrency::where('symbol', $symbol)
+            ->where('is_active', true)
+            ->first();
+        
+        // If crypto doesn't exist, create it
+        if (!$crypto) {
+            $crypto = Cryptocurrency::create([
+                'name' => ucfirst($cryptoSymbol),
+                'symbol' => $symbol,
+                'current_price' => $this->getCryptoPrice($cryptoSymbol),
+                'is_active' => true,
+                'is_verified' => true,
+            ]);
+        }
+        
+        return $crypto->id;
+    }
+    
+    /**
+     * Get current price for a cryptocurrency
+     */
+    protected function getCryptoPrice($cryptoSymbol)
+    {
+        // Mock prices - in production, fetch from API
+        $prices = [
+            'bitcoin' => 45000.00,
+            'ethereum' => 2800.00,
+            'usdt' => 1.00,
+            'usdc' => 1.00,
+        ];
+        
+        return $prices[$cryptoSymbol] ?? 1.00;
     }
 
     /**
@@ -406,48 +375,47 @@ class CryptoOnRampController extends Controller
     }
 
     /**
-     * Get available payment methods for user
+     * Get available payment methods for user (crypto only)
      */
     protected function getAvailablePaymentMethods($user)
     {
         $methods = [];
         
-        // Credit/Debit card (Stripe)
-        if (getSetting('payments.stripe_enabled') || true) { // Always show for demo
-            $methods['credit_card'] = [
-                'name' => 'Credit Card',
-                'icon' => 'fa-credit-card',
-                'fee' => '3.5%',
-                'instant' => true,
-            ];
-            $methods['debit_card'] = [
-                'name' => 'Debit Card',
-                'icon' => 'fa-credit-card',
-                'fee' => '3.5%',
-                'instant' => true,
-            ];
-        }
+        // Bitcoin
+        $methods['bitcoin'] = [
+            'name' => 'Bitcoin',
+            'symbol' => 'BTC',
+            'icon' => 'fa-brands fa-bitcoin',
+            'fee' => '1.0%',
+            'instant' => true,
+        ];
         
-        // PayPal
-        if (getSetting('payments.paypal_enabled') || true) {
-            $methods['paypal'] = [
-                'name' => 'PayPal',
-                'icon' => 'fa-brands fa-paypal',
-                'fee' => '4.0%',
-                'instant' => true,
-            ];
-        }
+        // Ethereum
+        $methods['ethereum'] = [
+            'name' => 'Ethereum',
+            'symbol' => 'ETH',
+            'icon' => 'fa-brands fa-ethereum',
+            'fee' => '1.0%',
+            'instant' => true,
+        ];
         
-        // Bank Transfer (for higher limits)
-        if ($user->kyc_level >= 2) {
-            $methods['bank_transfer'] = [
-                'name' => 'Bank Transfer',
-                'icon' => 'fa-building-columns',
-                'fee' => '1.0%',
-                'instant' => false,
-                'note' => '1-3 business days',
-            ];
-        }
+        // USDT
+        $methods['usdt'] = [
+            'name' => 'Tether',
+            'symbol' => 'USDT',
+            'icon' => 'fa-coins',
+            'fee' => '1.0%',
+            'instant' => true,
+        ];
+        
+        // USDC
+        $methods['usdc'] = [
+            'name' => 'USD Coin',
+            'symbol' => 'USDC',
+            'icon' => 'fa-coins',
+            'fee' => '1.0%',
+            'instant' => true,
+        ];
         
         return $methods;
     }
@@ -458,23 +426,28 @@ class CryptoOnRampController extends Controller
     public function getQuote(Request $request)
     {
         $amountUsd = (float) $request->input('amount', 0);
+        $paymentCrypto = $request->input('payment_crypto', 'bitcoin');
         $platformToken = $this->getPlatformToken();
         
         if (!$platformToken || $amountUsd <= 0) {
             return response()->json(['success' => false]);
         }
         
-        $processingFee = $amountUsd * 0.035;
-        $platformFee = $amountUsd * 0.01;
-        $netAmount = $amountUsd - $processingFee - $platformFee;
+        $cryptoPrice = $this->getCryptoPrice($paymentCrypto);
+        $cryptoAmount = $amountUsd / $cryptoPrice;
+        
+        $platformFee = $amountUsd * 0.01; // 1% platform fee only
+        $netAmount = $amountUsd - $platformFee;
         $tokensToReceive = $netAmount / $platformToken->current_price;
         
         return response()->json([
             'success' => true,
             'amount_usd' => $amountUsd,
-            'processing_fee' => round($processingFee, 2),
+            'payment_crypto' => $paymentCrypto,
+            'crypto_price' => $cryptoPrice,
+            'crypto_amount' => round($cryptoAmount, 8),
             'platform_fee' => round($platformFee, 2),
-            'total_fees' => round($processingFee + $platformFee, 2),
+            'total_fees' => round($platformFee, 2),
             'net_amount' => round($netAmount, 2),
             'token_price' => $platformToken->current_price,
             'tokens_to_receive' => round($tokensToReceive, 8),

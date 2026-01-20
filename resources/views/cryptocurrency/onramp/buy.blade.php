@@ -353,7 +353,7 @@
     <div class="onramp-card">
         <div class="onramp-header">
             <h1><i class="fas fa-coins"></i> {{ __('Buy Tokens') }}</h1>
-            <p>{{ __('Purchase tokens instantly with your credit card') }}</p>
+            <p>{{ __('Purchase tokens with cryptocurrency - Direct to wallet') }}</p>
         </div>
         
         <div class="onramp-body">
@@ -416,12 +416,12 @@
                             <span class="value" id="quote-amount">$0.00</span>
                         </div>
                         <div class="quote-row fee">
-                            <span>{{ __('Processing Fee (3.5%)') }}</span>
-                            <span class="value" id="quote-processing-fee">-$0.00</span>
-                        </div>
-                        <div class="quote-row fee">
                             <span>{{ __('Platform Fee (1%)') }}</span>
                             <span class="value" id="quote-platform-fee">-$0.00</span>
+                        </div>
+                        <div class="quote-row" id="crypto-payment-row" style="display: none;">
+                            <span id="crypto-payment-label">{{ __('You will pay') }}</span>
+                            <span class="value" id="quote-crypto-amount">0 BTC</span>
                         </div>
                         <div class="quote-row total">
                             <span>{{ __('You will receive') }}</span>
@@ -429,34 +429,61 @@
                         </div>
                     </div>
                     
-                    <!-- Payment Methods -->
+                    <!-- Payment Methods (Crypto Only) -->
                     <div class="form-group">
-                        <label>{{ __('Payment Method') }}</label>
+                        <label>{{ __('Pay With Cryptocurrency') }}</label>
                         <div class="payment-methods">
                             @foreach($paymentMethods as $key => $method)
                                 <label class="payment-method {{ $loop->first ? 'selected' : '' }}" data-method="{{ $key }}">
-                                    <input type="radio" name="payment_method" value="{{ $key }}" {{ $loop->first ? 'checked' : '' }} style="display: none;">
+                                    <input type="radio" name="payment_crypto" value="{{ $key }}" {{ $loop->first ? 'checked' : '' }} style="display: none;">
                                     <i class="fas {{ $method['icon'] }}"></i>
                                     <div class="name">{{ $method['name'] }}</div>
+                                    <div class="symbol">{{ $method['symbol'] }}</div>
                                     <div class="fee">Fee: {{ $method['fee'] }}</div>
                                 </label>
                             @endforeach
                         </div>
                     </div>
                     
-                    <!-- Card Input (Stripe Elements placeholder) -->
-                    <div class="card-input-container" id="card-container">
-                        <label style="display: block; color: #fff; font-size: 14px; margin-bottom: 12px;">{{ __('Card Details') }}</label>
-                        <div id="card-element" class="card-element">
-                            <!-- Stripe Elements will be inserted here -->
-                            <div style="color: rgba(255,255,255,0.7); font-size: 14px; text-align: center; padding: 20px;">
-                                <i class="fas fa-credit-card" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                                {{ __('Card payment simulation mode') }}<br>
-                                <small>{{ __('Enter any card details to test') }}</small>
+                    <!-- Crypto Payment Details -->
+                    <div class="crypto-payment-container" id="crypto-payment-container">
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                            <label style="display: block; color: #fff; font-size: 14px; margin-bottom: 12px;">
+                                <i class="fas fa-coins"></i> {{ __('You will pay') }}
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input 
+                                    type="number" 
+                                    name="crypto_amount" 
+                                    id="crypto-amount"
+                                    class="amount-input" 
+                                    placeholder="0.00000000"
+                                    step="0.00000001"
+                                    min="0.00000001"
+                                    style="flex: 1; padding: 16px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #fff; font-size: 18px; font-weight: 600;"
+                                    readonly
+                                >
+                                <span id="crypto-symbol" style="color: #22c55e; font-size: 18px; font-weight: 700; min-width: 60px; text-align: center;">BTC</span>
                             </div>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 8px 0 0 0;">
+                                {{ __('Crypto will be added to your wallet, then tokens will be distributed') }}
+                            </p>
                         </div>
-                        <input type="hidden" name="card_token" id="card-token" value="tok_visa">
-                        <div id="card-errors" style="color: #ef4444; margin-top: 10px; font-size: 14px;"></div>
+                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px;">
+                            <label style="display: block; color: #fff; font-size: 14px; margin-bottom: 8px;">
+                                {{ __('Transaction Hash (Optional)') }}
+                            </label>
+                            <input 
+                                type="text" 
+                                name="transaction_hash" 
+                                id="transaction-hash"
+                                placeholder="0x..."
+                                style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; font-size: 14px; font-family: monospace;"
+                            >
+                            <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 8px 0 0 0;">
+                                {{ __('If you have a transaction hash from your crypto payment, enter it here') }}
+                            </p>
+                        </div>
                     </div>
                     
                     <!-- Purchase Button -->
@@ -526,15 +553,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update quote when amount changes
     function updateQuote() {
         const amount = parseFloat(amountInput.value) || 0;
-        const processingFee = amount * 0.035;
+        const selectedCrypto = document.querySelector('input[name="payment_crypto"]:checked')?.value || 'bitcoin';
         const platformFee = amount * 0.01;
-        const netAmount = amount - processingFee - platformFee;
+        const netAmount = amount - platformFee;
         const tokens = netAmount / tokenPrice;
         
         document.getElementById('quote-amount').textContent = '$' + amount.toFixed(2);
-        document.getElementById('quote-processing-fee').textContent = '-$' + processingFee.toFixed(2);
         document.getElementById('quote-platform-fee').textContent = '-$' + platformFee.toFixed(2);
         document.getElementById('quote-tokens').textContent = tokens.toFixed(4) + ' {{ $platformToken->symbol ?? "TOKEN" }}';
+        
+        // Fetch crypto quote
+        if (amount > 0) {
+            fetch(`{{ route('cryptocurrency.onramp.quote') }}?amount=${amount}&payment_crypto=${selectedCrypto}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('crypto-amount').value = data.crypto_amount.toFixed(8);
+                    document.getElementById('quote-crypto-amount').textContent = data.crypto_amount.toFixed(8) + ' ' + data.payment_crypto.toUpperCase().substring(0, 3);
+                    document.getElementById('crypto-symbol').textContent = data.payment_crypto.toUpperCase().substring(0, 3);
+                    document.getElementById('crypto-payment-row').style.display = 'flex';
+                    document.getElementById('crypto-payment-label').textContent = 'You will pay (' + data.payment_crypto.toUpperCase() + ')';
+                }
+            })
+            .catch(error => console.error('Error fetching quote:', error));
+        } else {
+            document.getElementById('crypto-amount').value = '';
+            document.getElementById('crypto-payment-row').style.display = 'none';
+        }
     }
     
     amountInput.addEventListener('input', updateQuote);
@@ -555,14 +605,13 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('selected');
             this.querySelector('input').checked = true;
             
-            // Show/hide card input based on method
-            const cardContainer = document.getElementById('card-container');
-            const selectedMethod = this.dataset.method;
-            if (selectedMethod === 'credit_card' || selectedMethod === 'debit_card') {
-                cardContainer.style.display = 'block';
-            } else {
-                cardContainer.style.display = 'none';
+            // Update crypto symbol and quote
+            const selectedCrypto = this.dataset.method;
+            const methodData = {{ json_encode($paymentMethods) }};
+            if (methodData[selectedCrypto]) {
+                document.getElementById('crypto-symbol').textContent = methodData[selectedCrypto].symbol;
             }
+            updateQuote();
         });
     });
     

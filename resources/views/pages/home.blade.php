@@ -193,12 +193,12 @@
             padding: 10px 14px 10px 10px;
             border-radius: 14px;
             margin: -10px -14px 8px -10px;
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(8px);
+            background: transparent !important;
+            backdrop-filter: none !important;
         }
         
         .user-info.clickable:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: transparent !important;
             transform: scale(1.03);
         }
         
@@ -926,8 +926,7 @@
         }
         
         /* Bottom Modal Styles */
-        .header-modal,
-        .search-modal {
+        .header-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -940,14 +939,12 @@
             transition: all 0.3s ease;
         }
         
-        .header-modal.active,
-        .search-modal.active {
+        .header-modal.active {
             opacity: 1;
             visibility: visible;
         }
         
-        .header-modal-content,
-        .search-modal-content {
+        .header-modal-content {
             background: #fff;
             border-radius: 20px 20px 0 0;
             padding: 0;
@@ -960,13 +957,11 @@
             bottom: 0;
         }
         
-        .header-modal.active .header-modal-content,
-        .search-modal.active .search-modal-content {
+        .header-modal.active .header-modal-content {
             transform: translateY(0);
         }
         
-        .header-modal-header,
-        .search-modal-header {
+        .header-modal-header {
             padding: 20px 20px 16px 20px;
             border-bottom: 1px solid #eee;
             display: flex;
@@ -978,8 +973,7 @@
             z-index: 10;
         }
         
-        .header-modal-header::before,
-        .search-modal-header::before {
+        .header-modal-header::before {
             content: '';
             position: absolute;
             top: 8px;
@@ -991,16 +985,14 @@
             border-radius: 2px;
         }
         
-        .header-modal-header h3,
-        .search-modal-header h3 {
+        .header-modal-header h3 {
             margin: 0;
             color: #333;
             font-size: 18px;
             font-weight: 600;
         }
         
-        .header-modal-close,
-        .search-modal-close {
+        .header-modal-close {
             background: rgba(0, 0, 0, 0.05);
             border: none;
             font-size: 18px;
@@ -1016,8 +1008,7 @@
             justify-content: center;
         }
         
-        .header-modal-close:hover,
-        .search-modal-close:hover {
+        .header-modal-close:hover {
             background: rgba(0, 0, 0, 0.1);
             color: #333;
             transform: scale(1.05);
@@ -1057,88 +1048,335 @@
             text-align: center;
         }
         
-        /* Search Modal Styles */
-        .search-input-container {
+        /* TikTok-Style Full Screen Search */
+        .search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1004;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .search-modal.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .search-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .search-back-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+        
+        .search-back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-input-wrapper {
+            flex: 1;
             position: relative;
-            padding: 20px;
-            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 16px;
         }
         
-        .search-input-container input {
-            width: 100%;
-            padding: 16px 50px 16px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 25px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-        
-        .search-input-container input:focus {
-            border-color: #ff6b6b;
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-            background: #fff;
-        }
-        
-        .search-icon {
-            position: absolute;
-            right: 35px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
+        .search-input-icon {
+            color: rgba(255, 255, 255, 0.6);
             font-size: 18px;
         }
         
-        .search-results {
-            max-height: 400px;
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            padding: 0;
+        }
+        
+        .search-input-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .search-clear-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .search-clear-btn.visible {
+            display: flex;
+        }
+        
+        .search-clear-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .search-send-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .search-send-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .search-content {
+            flex: 1;
             overflow-y: auto;
-            padding: 0 20px 20px;
-            background: #fff;
+            padding: 16px;
+            background: #000;
+        }
+        
+        .search-suggestions {
+            margin-bottom: 24px;
+        }
+        
+        .search-suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .search-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-suggestion-item:hover {
+            opacity: 0.8;
+        }
+        
+        .suggestion-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+        }
+        
+        .suggestion-text {
+            flex: 1;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .user-profile-suggestion {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .user-profile-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .user-profile-suggestion:hover {
+            opacity: 0.8;
+        }
+        
+        .user-avatar-search {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar-search img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .user-info-search {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .user-info-search .username {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+        
+        .user-info-search .verified-badge {
+            color: #1DA1F2;
+            font-size: 14px;
+        }
+        
+        .user-info-search .user-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin: 0;
         }
         
         .search-loading,
         .no-search-results,
         .search-placeholder {
             text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-size: 14px;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
         }
         
-        .search-result-item {
+        .search-result-video {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 15px;
-            border-radius: 12px;
+            gap: 12px;
+            padding: 12px 0;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 10px;
-            border: 1px solid #f0f0f0;
+            transition: opacity 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        .search-result-item:hover {
-            background: #f8f9fa;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .search-result-video:last-child {
+            border-bottom: none;
         }
         
-        .search-result-info {
+        .search-result-video:hover {
+            opacity: 0.8;
+        }
+        
+        .video-thumbnail {
+            width: 120px;
+            height: 160px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-info-search {
             flex: 1;
+            min-width: 0;
         }
         
-        .search-result-info h4 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
+        .video-info-search h4 {
+            color: #fff;
+            font-size: 16px;
             font-weight: 600;
-            color: #333;
+            margin: 0 0 8px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
-        .search-result-info p {
+        .video-info-search p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
             margin: 0;
-            font-size: 13px;
-            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .search-header {
+                padding: 10px 12px;
+            }
+            
+            .search-input-wrapper {
+                padding: 8px 12px;
+            }
+            
+            .search-content {
+                padding: 12px;
+            }
+            
+            .user-avatar-search {
+                width: 44px;
+                height: 44px;
+                font-size: 16px;
+            }
+            
+            .video-thumbnail {
+                width: 100px;
+                height: 134px;
+            }
         }
         
         /* Bottom Navigation Bar */
@@ -1169,15 +1407,22 @@
             border-radius: 12px;
             flex: 1;
             max-width: 80px;
+            background: transparent !important;
         }
         
         .bottom-nav-item.active {
             color: #fff;
+            background: transparent !important;
         }
         
         .bottom-nav-item:hover {
             color: #fff;
             transform: translateY(-2px);
+            background: transparent !important;
+        }
+        
+        .bottom-nav-item:active {
+            background: transparent !important;
         }
         
         .bottom-nav-icon {
@@ -1214,6 +1459,12 @@
             .user-info.clickable {
                 padding: 8px 12px 8px 8px;
                 margin: -8px -12px 6px -8px;
+                background: transparent !important;
+                backdrop-filter: none !important;
+            }
+            
+            .user-info.clickable:hover {
+                background: transparent !important;
             }
             
             .top-header {
@@ -1317,22 +1568,25 @@
         </div>
     </div>
 
-    <!-- Search Modal -->
+    <!-- TikTok-Style Full Screen Search -->
     <div class="search-modal" id="search-modal">
-        <div class="search-modal-content">
-            <div class="search-modal-header">
-                <h3>Search Videos</h3>
-                <button class="search-modal-close">
+        <div class="search-header">
+            <button class="search-back-btn" id="search-back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-input-icon"></i>
+                <input type="text" id="search-input" placeholder="Search" autocomplete="off">
+                <button class="search-clear-btn" id="search-clear-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="search-input-container">
-                <input type="text" id="search-input" placeholder="Search for videos..." autocomplete="off">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-            <div class="search-results" id="search-results">
-                <div class="search-placeholder">Type at least 3 characters to search...</div>
-            </div>
+            <button class="search-send-btn" id="search-send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        <div class="search-content" id="search-results">
+            <div class="search-placeholder">Start typing to search...</div>
         </div>
     </div>
 
@@ -2124,51 +2378,111 @@
                 });
             }
             
-            // Search Modal
+            // TikTok-Style Search Modal
             const searchBtn = document.getElementById('search-btn');
             const searchModal = document.getElementById('search-modal');
-            const searchModalClose = document.querySelector('.search-modal-close');
+            const searchBackBtn = document.getElementById('search-back-btn');
             const searchInput = document.getElementById('search-input');
+            const searchClearBtn = document.getElementById('search-clear-btn');
+            const searchSendBtn = document.getElementById('search-send-btn');
             const searchResults = document.getElementById('search-results');
             
-            if (searchBtn && searchModal) {
-                searchBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
+            function openSearchModal() {
+                if (searchModal) {
                     searchModal.classList.add('active');
                     setTimeout(() => {
-                        if (searchInput) searchInput.focus();
+                        if (searchInput) {
+                            searchInput.focus();
+                        }
                     }, 300);
-                });
+                }
             }
             
-            if (searchModalClose) {
-                searchModalClose.addEventListener('click', function() {
+            function closeSearchModal() {
+                if (searchModal) {
                     searchModal.classList.remove('active');
+                }
+                if (searchInput) {
+                    searchInput.value = '';
+                    updateClearButton();
+                }
+                if (searchResults) {
+                    searchResults.innerHTML = '<div class="search-placeholder">Start typing to search...</div>';
+                }
+            }
+            
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openSearchModal();
                 });
             }
             
-            // Close search modal when clicking outside
-            if (searchModal) {
-                searchModal.addEventListener('click', function(e) {
-                    if (e.target === searchModal) {
-                        searchModal.classList.remove('active');
+            if (searchBackBtn) {
+                searchBackBtn.addEventListener('click', function() {
+                    closeSearchModal();
+                });
+            }
+            
+            function updateClearButton() {
+                if (searchClearBtn && searchInput) {
+                    if (searchInput.value.trim().length > 0) {
+                        searchClearBtn.classList.add('visible');
+                    } else {
+                        searchClearBtn.classList.remove('visible');
+                    }
+                }
+            }
+            
+            if (searchClearBtn) {
+                searchClearBtn.addEventListener('click', function() {
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.focus();
+                        updateClearButton();
+                        if (searchResults) {
+                            searchResults.innerHTML = '<div class="search-placeholder">Start typing to search...</div>';
+                        }
                     }
                 });
             }
             
-            // Search functionality
+            // Search functionality with suggestions
             if (searchInput && searchResults) {
                 let searchTimeout;
+                
                 searchInput.addEventListener('input', function() {
+                    updateClearButton();
                     clearTimeout(searchTimeout);
                     const query = this.value.trim();
                     
-                    if (query.length > 2) {
+                    if (query.length > 0) {
                         searchTimeout = setTimeout(() => {
                             performSearch(query);
-                        }, 500);
+                        }, 300);
                     } else {
-                        searchResults.innerHTML = '<div class="search-placeholder">Type at least 3 characters to search...</div>';
+                        searchResults.innerHTML = '<div class="search-placeholder">Start typing to search...</div>';
+                    }
+                });
+                
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const query = this.value.trim();
+                        if (query.length > 0) {
+                            performSearch(query);
+                        }
+                    }
+                });
+            }
+            
+            if (searchSendBtn) {
+                searchSendBtn.addEventListener('click', function() {
+                    if (searchInput) {
+                        const query = searchInput.value.trim();
+                        if (query.length > 0) {
+                            performSearch(query);
+                        }
                     }
                 });
             }
@@ -2178,22 +2492,118 @@
                 
                 searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
                 
-                fetch(`/search/videos?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.videos && data.videos.length > 0) {
-                        const resultsHtml = data.videos.map(video => `
-                            <div class="search-result-item" onclick="goToVideo('${video.id}')">
-                                <div class="search-result-info">
-                                    <h4>${video.title}</h4>
-                                    <p>By ${video.user ? video.user.name : 'Unknown'}</p>
+                // Fetch both videos and users
+                Promise.all([
+                    fetch(`/api/videos/search?query=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    }).then(r => {
+                        if (!r.ok) throw new Error('Video search failed');
+                        return r.json();
+                    }).catch(e => ({ success: false, videos: [] })),
+                    fetch(`/search/users?query=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    }).then(r => {
+                        if (!r.ok) throw new Error('User search failed');
+                        return r.json();
+                    }).catch(e => ({ success: false, data: [] }))
+                ])
+                .then(([videosData, usersData]) => {
+                    let html = '';
+                    
+                    // Show search term suggestions
+                    if (query.length > 0 && query.length < 15) {
+                        html += '<div class="search-suggestions">';
+                        // Generate suggestions based on query
+                        const suggestions = [
+                            query + ' edit',
+                            query + ' therapy',
+                            query + ' video'
+                        ].slice(0, 3);
+                        
+                        suggestions.forEach(suggestion => {
+                            html += `
+                                <div class="search-suggestion-item" onclick="searchFor('${suggestion.replace(/'/g, "\\'")}')">
+                                    <div class="suggestion-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="suggestion-text">${escapeHtml(suggestion)}</div>
                                 </div>
-                            </div>
-                        `).join('');
-                        searchResults.innerHTML = resultsHtml;
-                    } else {
-                        searchResults.innerHTML = '<div class="no-search-results">No videos found for "' + query + '"</div>';
+                            `;
+                        });
+                        html += '</div>';
                     }
+                    
+                    // Show user results - handle both paginated and non-paginated responses
+                    let users = [];
+                    if (usersData.success) {
+                        if (Array.isArray(usersData.data)) {
+                            users = usersData.data;
+                        } else if (usersData.data && Array.isArray(usersData.data.data)) {
+                            users = usersData.data.data;
+                        }
+                    }
+                    
+                    if (users.length > 0) {
+                        html += '<div class="search-suggestions">';
+                        users.slice(0, 5).forEach(user => {
+                            // Handle different user object structures
+                            const userObj = user.user || user;
+                            const username = userObj.username || userObj.name || 'user';
+                            const displayName = userObj.name || username;
+                            const avatar = userObj.avatar || '';
+                            const initials = getUserInitials(displayName);
+                            const isVerified = userObj.is_verified || userObj.verified || false;
+                            const bio = userObj.bio || '';
+                            
+                            html += `
+                                <div class="user-profile-suggestion" onclick="goToProfile('${escapeHtml(username)}')">
+                                    <div class="user-avatar-search">
+                                        ${avatar ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(displayName)}">` : initials}
+                                    </div>
+                                    <div class="user-info-search">
+                                        <div class="username">
+                                            ${escapeHtml(displayName)}
+                                            ${isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}
+                                        </div>
+                                        <div class="user-desc">@${escapeHtml(username)}${bio ? ' • ' + escapeHtml(bio.substring(0, 50)) : ''}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    }
+                    
+                    // Show video results
+                    if (videosData.success && videosData.videos && videosData.videos.length > 0) {
+                        html += '<div class="search-suggestions">';
+                        videosData.videos.slice(0, 10).forEach(video => {
+                            const videoTitle = video.title || '';
+                            const userName = video.user_name || 'Unknown';
+                            const videoId = video.id;
+                            
+                            html += `
+                                <div class="search-result-video" onclick="goToVideo('${videoId}')">
+                                    <div class="video-info-search">
+                                        <h4>${escapeHtml(videoTitle)}</h4>
+                                        <p>By ${escapeHtml(userName)}</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    }
+                    
+                    if (html === '') {
+                        html = `<div class="no-search-results">No results found for "${escapeHtml(query)}"</div>`;
+                    }
+                    
+                    searchResults.innerHTML = html;
                 })
                 .catch(error => {
                     console.error('Search error:', error);
@@ -2201,13 +2611,37 @@
                 });
             }
             
+            function searchFor(query) {
+                if (searchInput) {
+                    searchInput.value = query;
+                    updateClearButton();
+                    performSearch(query);
+                }
+            }
+            
+            function goToProfile(username) {
+                window.location.href = '/' + username;
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            window.searchFor = searchFor;
+            window.goToProfile = goToProfile;
+            
             window.goToVideo = function(videoId) {
                 const videoElement = document.querySelector(`.video-item[data-video-id="${videoId}"]`);
                 if (videoElement) {
-                    videoElement.scrollIntoView({ behavior: 'smooth' });
-                    if (searchModal) {
-                        searchModal.classList.remove('active');
-                    }
+                    closeSearchModal();
+                    setTimeout(() => {
+                        videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                } else {
+                    // If video not found in current feed, redirect to video page
+                    window.location.href = `/videos/${videoId}`;
                 }
             };
             
