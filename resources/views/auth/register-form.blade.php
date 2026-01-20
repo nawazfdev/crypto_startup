@@ -153,11 +153,24 @@
         >
             <option value="" style="background: #1a1a1a;">{{ __('Select your country') }}</option>
             @php
-                $countries = \App\Model\Country::orderBy('name')->get();
+                try {
+                    $countries = \App\Model\Country::where('name', '!=', 'All')->orderBy('name')->get();
+                    if ($countries->isEmpty()) {
+                        // If no countries, seed them
+                        \Artisan::call('db:seed', ['--class' => 'InsertCountries']);
+                        $countries = \App\Model\Country::where('name', '!=', 'All')->orderBy('name')->get();
+                    }
+                } catch (\Exception $e) {
+                    $countries = collect([]);
+                }
             @endphp
-            @foreach($countries as $country)
-                <option value="{{ $country->id }}" style="background: #1a1a1a;" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
-            @endforeach
+            @if($countries->isNotEmpty())
+                @foreach($countries as $country)
+                    <option value="{{ $country->id }}" style="background: #1a1a1a;" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                @endforeach
+            @else
+                <option value="" style="background: #1a1a1a;">{{ __('Countries loading...') }}</option>
+            @endif
         </select>
         @error('country_id')
             <p style="margin-top: 4px; font-size: 14px; color: #f87171;">{{ $message }}</p>
@@ -309,7 +322,7 @@
                 >
             </div>
             <label for="privacyAgree" style="font-size: 14px; color: #d1d5db; line-height: 1.5; cursor: pointer;">
-                <span style="color: #ff6b6b;">*</span> {{ __('I agree to the') }} <a href="{{route('pages.get',['slug'=>GenericHelper::getPrivacyPage()->slug])}}" target="_blank" style="color: #830866; text-decoration: none;">{{ __('Privacy Policy') }}</a>
+                <span style="color: #ff6b6b;">*</span> {{ __('I agree to the') }} <a href="{{ route('pages.get', ['slug' => 'privacy-policy']) }}" target="_blank" style="color: #830866; text-decoration: none;">{{ __('Privacy Policy') }}</a>
             </label>
         </div>
         

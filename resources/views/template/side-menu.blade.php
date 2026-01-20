@@ -42,6 +42,16 @@
             </a>
         </li>
         <li class="nav-item">
+            <a href="{{ route('custom-requests.marketplace') }}" class="h-pill h-pill-primary nav-link {{Route::currentRouteName() == 'custom-requests.marketplace' || Route::currentRouteName() == 'custom-requests.show' || Route::currentRouteName() == 'custom-requests.my-requests' ? 'active' : ''}} d-flex justify-content-between">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                        @include('elements.icon',['icon'=>'gift-outline','variant'=>'large'])
+                    </div>
+                    <span class="d-none d-md-block d-xl-block d-lg-block ml-2 text-truncate side-menu-label">{{__('Custom Requests')}}</span>
+                </div>
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('videos.reels') }}" class="h-pill h-pill-primary nav-link {{Route::currentRouteName() == 'videos.reels' ? 'active' : ''}} d-flex justify-content-between">
                 <div class="d-flex justify-content-center align-items-center">
                     <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -204,6 +214,15 @@
                     </a>
                 </li>
             @endif
+        @endif
+
+        @if(GenericHelper::isEmailEnforcedAndValidated())
+            <li class="nav-item">
+                <a role="button" class="btn btn-round btn-outline-primary btn-block" href="#" onclick="event.preventDefault(); CustomRequest.showCreateModal();">
+                    <span class="d-none d-md-block d-xl-block d-lg-block ml-2 text-truncate">{{__('Create Request')}}</span>
+                    <span class="d-block d-md-none d-flex align-items-center justify-content-center">@include('elements.icon',['icon'=>'gift-outline','variant'=>'medium','classes'=>'flex-shrink-0'])</span>
+                </a>
+            </li>
         @endif
 
 

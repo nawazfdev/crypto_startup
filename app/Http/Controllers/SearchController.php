@@ -194,8 +194,10 @@ class SearchController extends Controller
     public function getUsersSearch(Request $request)
     {
         $filters = $this->processFilterParams($request);
+        // Don't encode to HTML for API calls (like custom request form)
+        $encodeHtml = $request->get('encode_html', false);
         return response()->json(['success'=>true, 'data'=> MembersHelperServiceProvider::getSearchUsers(array_merge(
-            ['encodePostsToHtml'=>true, 'searchTerm' => $filters['searchTerm']],
+            ['encodePostsToHtml'=>$encodeHtml, 'searchTerm' => $filters['searchTerm']],
             [
                 'gender' => $request->get('gender'),
                 'min_age' => $request->get('min_age'),

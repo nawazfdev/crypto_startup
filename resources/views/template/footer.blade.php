@@ -64,6 +64,12 @@
                         @foreach(GenericHelper::getFooterPublicPages() as $page)
                             <a href="{{route('pages.get',['slug' => $page->slug])}}" class="footer-link-item">{{__($page->title)}}</a>
                         @endforeach
+                        <a href="{{ route('community.guidelines') }}" class="footer-link-item" target="_blank">
+                            {{__('Community Guidelines')}}
+                        </a>
+                        <a href="{{ route('privacy.policy') }}" class="footer-link-item" target="_blank">
+                            {{__('Privacy Policy')}}
+                        </a>
                         <a href="{{ route('dmca.index') }}" class="footer-link-item">
                             {{__('DMCA')}}
                         </a>

@@ -43,5 +43,9 @@
                '/js/SideMenu.js'
 ]])
 @include('elements.language-selector-box')
+@auth
+    @include('elements.custom-request.create-modal')
+    <script src="{{ asset('js/CustomRequest.js') }}"></script>
+@endauth
 </body>
 </html>
