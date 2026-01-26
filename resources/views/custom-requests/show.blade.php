@@ -169,6 +169,231 @@
                         </div>
                     @endif
 
+                    <!-- Payment Section (if payment required but not received) -->
+                    @auth
+                        @if($customRequest->requester_id == Auth::id() && $customRequest->upfront_payment > 0 && !$customRequest->payment_received)
+                            <div class="payment-required-section mb-4">
+                                <div class="alert alert-warning border-0 shadow-sm">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h5 class="mb-2">
+                                                <i class="fas fa-credit-card text-warning"></i>
+                                                {{ __('Upfront Payment Required') }}
+                                            </h5>
+                                            <p class="mb-2">
+                                                {{ __('To proceed with this request, you need to make an upfront payment of') }}
+                                                <strong class="h5 text-dark">${{ number_format($customRequest->upfront_payment, 2) }}</strong>
+                                            </p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                {{ __('Minimum upfront payment is $1.00. This ensures commitment to the request.') }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-warning btn-lg" onclick="processUpfrontPayment({{ $customRequest->id }})">
+                                                <i class="fas fa-credit-card"></i>
+                                                {{ __('Pay Now') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endauth
+
+                    <!-- Voting Section (for public/marketplace requests) -->
+                    @if($customRequest->requires_voting && in_array($customRequest->status, ['accepted', 'completed']))
+                        <div class="voting-section mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-vote-yea"></i>
+                                        {{ __('Voting & Fund Release') }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="voting-stats mb-4">
+                                        <div class="row text-center">
+                                            <div class="col-md-4">
+                                                <div class="stat-box">
+                                                    <h3 class="text-success mb-1">{{ $customRequest->approval_votes ?? 0 }}</h3>
+                                                    <small class="text-muted">{{ __('Approvals') }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="stat-box">
+                                                    <h3 class="text-danger mb-1">{{ $customRequest->rejection_votes ?? 0 }}</h3>
+                                                    <small class="text-muted">{{ __('Rejections') }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="stat-box">
+                                                    <h3 class="text-primary mb-1">{{ number_format($customRequest->approval_percentage ?? 0, 1) }}%</h3>
+                                                    <small class="text-muted">{{ __('Approval Rate') }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="progress mt-3" style="height: 20px;">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 style="width: {{ $customRequest->approval_percentage ?? 0 }}%"
+                                                 aria-valuenow="{{ $customRequest->approval_percentage ?? 0 }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ number_format($customRequest->approval_percentage ?? 0, 1) }}%
+                                            </div>
+                                        </div>
+                                        
+                                        @if($customRequest->hasMajorityApproval())
+                                            <div class="alert alert-success mt-3 mb-0">
+                                                <i class="fas fa-check-circle"></i>
+                                                <strong>{{ __('Majority Approval Reached!') }}</strong>
+                                                {{ __('Funds can now be released to the creator.') }}
+                                            </div>
+                                        @else
+                                            <div class="alert alert-info mt-3 mb-0">
+                                                <i class="fas fa-info-circle"></i>
+                                                {{ __('Majority approval (50%+) is required to release funds.') }}
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    @auth
+                                        @if($customRequest->canUserVote(Auth::id()) && !$customRequest->hasUserVoted(Auth::id()))
+                                            <div class="voting-actions">
+                                                <h6 class="mb-3">{{ __('Cast Your Vote') }}</h6>
+                                                <div class="d-flex gap-2 mb-3">
+                                                    <button type="button" class="btn btn-success btn-lg flex-fill" onclick="castVote({{ $customRequest->id }}, 'approve')">
+                                                        <i class="fas fa-thumbs-up"></i>
+                                                        {{ __('Approve Release') }}
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-lg flex-fill" onclick="castVote({{ $customRequest->id }}, 'reject')">
+                                                        <i class="fas fa-thumbs-down"></i>
+                                                        {{ __('Reject Release') }}
+                                                    </button>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    {{ __('Your vote helps determine if funds should be released to the creator.') }}
+                                                </small>
+                                            </div>
+                                        @elseif($customRequest->hasUserVoted(Auth::id()))
+                                            @php
+                                                $userVote = $customRequest->getUserVote(Auth::id());
+                                            @endphp
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-check"></i>
+                                                {{ __('You have already voted:') }}
+                                                <strong>{{ ucfirst($userVote->vote_type) }}</strong>
+                                                @if($userVote->comment)
+                                                    <div class="mt-2">
+                                                        <small><em>"{{ $userVote->comment }}"</em></small>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                {{ __('Only the requester and contributors can vote on fund release.') }}
+                                            </div>
+                                        @endif
+
+                                        @if($customRequest->creator_id == Auth::id() && $customRequest->canReleaseFunds() && !$customRequest->funds_released)
+                                            <div class="fund-release-section mt-4 pt-4 border-top">
+                                                <h6 class="mb-3">{{ __('Release Funds') }}</h6>
+                                                <button type="button" class="btn btn-primary btn-lg" onclick="releaseFunds({{ $customRequest->id }})">
+                                                    <i class="fas fa-unlock"></i>
+                                                    {{ __('Release Funds to Creator') }}
+                                                </button>
+                                                <small class="d-block text-muted mt-2">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    {{ __('Funds will be released to your account after majority approval.') }}
+                                                </small>
+                                            </div>
+                                        @endif
+                                    @endauth
+
+                                    <!-- Votes List -->
+                                    @if($customRequest->votes && $customRequest->votes->count() > 0)
+                                        <div class="votes-list mt-4 pt-4 border-top">
+                                            <h6 class="mb-3">{{ __('Votes') }}</h6>
+                                            <div class="list-group">
+                                                @foreach($customRequest->votes as $vote)
+                                                    <div class="list-group-item">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <strong>{{ $vote->voter->name ?? 'Unknown' }}</strong>
+                                                                @if($vote->is_requester)
+                                                                    <span class="badge badge-primary ml-2">{{ __('Requester') }}</span>
+                                                                @endif
+                                                                @if($vote->is_contributor)
+                                                                    <span class="badge badge-info ml-2">{{ __('Contributor') }}</span>
+                                                                @endif
+                                                                <div class="mt-1">
+                                                                    @if($vote->vote_type == 'approve')
+                                                                        <span class="badge badge-success">
+                                                                            <i class="fas fa-thumbs-up"></i> {{ __('Approved') }}
+                                                                        </span>
+                                                                    @elseif($vote->vote_type == 'reject')
+                                                                        <span class="badge badge-danger">
+                                                                            <i class="fas fa-thumbs-down"></i> {{ __('Rejected') }}
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="badge badge-secondary">
+                                                                            <i class="fas fa-minus"></i> {{ __('Abstained') }}
+                                                                        </span>
+                                                                    @endif
+                                                                </div>
+                                                                @if($vote->comment)
+                                                                    <p class="mb-0 mt-2 text-muted small">{{ $vote->comment }}</p>
+                                                                @endif
+                                                            </div>
+                                                            <small class="text-muted">{{ $vote->created_at->diffForHumans() }}</small>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Support Ticket Section -->
+                    @auth
+                        <div class="support-section mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-headset"></i>
+                                        {{ __('Customer Support') }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    @if($customRequest->has_support_ticket)
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-ticket-alt"></i>
+                                            {{ __('You have an open support ticket for this request.') }}
+                                            <a href="#" class="btn btn-sm btn-outline-primary ml-2" onclick="showSupportTicket({{ $customRequest->id }})">
+                                                {{ __('View Ticket') }}
+                                            </a>
+                                        </div>
+                                    @else
+                                        <p class="text-muted mb-3">
+                                            {{ __('Need help with this request? Create a support ticket for assistance.') }}
+                                        </p>
+                                        <button type="button" class="btn btn-outline-primary" onclick="showCreateSupportTicketModal({{ $customRequest->id }})">
+                                            <i class="fas fa-plus-circle"></i>
+                                            {{ __('Create Support Ticket') }}
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endauth
+
                     <!-- Action Buttons -->
                     @auth
                         <div class="action-section">
@@ -794,6 +1019,50 @@
     border-radius: 20px;
 }
 
+/* Payment Required Section */
+.payment-required-section .alert {
+    border-radius: 16px;
+    border-left: 4px solid #ffc107;
+}
+
+/* Voting Section */
+.voting-section .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.voting-stats .stat-box {
+    padding: 1rem;
+}
+
+.voting-stats h3 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.voting-actions .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.voting-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.votes-list .list-group-item {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Support Section */
+.support-section .card-header {
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
 .badge-sm {
     font-size: 0.7rem;
     padding: 0.25rem 0.5rem;
@@ -1003,6 +1272,242 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    };
+
+    // Process upfront payment
+    window.processUpfrontPayment = function(requestId) {
+        if (confirm('{{ __("You will be redirected to complete the payment. Continue?") }}')) {
+            fetch(`/custom-requests/${requestId}/payment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    provider: 'credit' // Default to credit/wallet payment
+                })
+            })
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                const isJson = contentType && contentType.includes('application/json');
+                
+                if (isJson) {
+                    return response.json();
+                } else {
+                    throw { message: '{{ __("Invalid response from server") }}' };
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        if (typeof launchToast !== 'undefined') {
+                            launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Payment processed successfully!") }}');
+                        }
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                } else {
+                    const errorMsg = data.message || '{{ __("Payment processing failed") }}';
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('danger', '{{ __("Error") }}', errorMsg);
+                    } else {
+                        alert('{{ __("Error") }}: ' + errorMsg);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert(errorMsg);
+                }
+            });
+        }
+    };
+
+    // Cast vote on request
+    window.castVote = function(requestId, voteType) {
+        const comment = prompt('{{ __("Optional: Add a comment with your vote") }}');
+        
+        fetch(`/custom-requests/${requestId}/vote`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                vote_type: voteType,
+                comment: comment || null
+            })
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+            
+            if (isJson) {
+                return response.json();
+            } else {
+                throw { message: '{{ __("Invalid response from server") }}' };
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Your vote has been recorded!") }}');
+                } else {
+                    alert(data.message || '{{ __("Your vote has been recorded!") }}');
+                }
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                const errorMsg = data.message || '{{ __("Failed to record vote") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert('{{ __("Error") }}: ' + errorMsg);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+            if (typeof launchToast !== 'undefined') {
+                launchToast('danger', '{{ __("Error") }}', errorMsg);
+            } else {
+                alert(errorMsg);
+            }
+        });
+    };
+
+    // Release funds to creator
+    window.releaseFunds = function(requestId) {
+        const releaseNotes = prompt('{{ __("Optional: Add notes about the fund release") }}');
+        
+        if (!confirm('{{ __("Are you sure you want to release funds? This action cannot be undone.") }}')) {
+            return;
+        }
+
+        fetch(`/custom-requests/${requestId}/release-funds`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                release_notes: releaseNotes || null
+            })
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+            
+            if (isJson) {
+                return response.json();
+            } else {
+                throw { message: '{{ __("Invalid response from server") }}' };
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Funds released successfully!") }}');
+                } else {
+                    alert(data.message || '{{ __("Funds released successfully!") }}');
+                }
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                const errorMsg = data.message || '{{ __("Failed to release funds") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert('{{ __("Error") }}: ' + errorMsg);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+            if (typeof launchToast !== 'undefined') {
+                launchToast('danger', '{{ __("Error") }}', errorMsg);
+            } else {
+                alert(errorMsg);
+            }
+        });
+    };
+
+    // Show create support ticket modal
+    window.showCreateSupportTicketModal = function(requestId) {
+        // Create modal dynamically or use existing modal
+        const subject = prompt('{{ __("Enter ticket subject") }}');
+        if (!subject) return;
+        
+        const description = prompt('{{ __("Describe your issue") }}');
+        if (!description) return;
+        
+        const type = prompt('{{ __("Ticket type (general/dispute/payment/voting/technical)") }}', 'general');
+        const priority = prompt('{{ __("Priority (low/normal/high/urgent)") }}', 'normal');
+
+        fetch(`/custom-requests/${requestId}/support-ticket`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                type: type || 'general',
+                priority: priority || 'normal',
+                subject: subject,
+                description: description
+            })
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+            
+            if (isJson) {
+                return response.json();
+            } else {
+                throw { message: '{{ __("Invalid response from server") }}' };
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('success', '{{ __("Success") }}', data.message || '{{ __("Support ticket created successfully!") }}');
+                } else {
+                    alert(data.message || '{{ __("Support ticket created successfully!") }}');
+                }
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                const errorMsg = data.message || '{{ __("Failed to create support ticket") }}';
+                if (typeof launchToast !== 'undefined') {
+                    launchToast('danger', '{{ __("Error") }}', errorMsg);
+                } else {
+                    alert('{{ __("Error") }}: ' + errorMsg);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorMsg = error.message || '{{ __("An error occurred. Please try again.") }}';
+            if (typeof launchToast !== 'undefined') {
+                launchToast('danger', '{{ __("Error") }}', errorMsg);
+            } else {
+                alert(errorMsg);
+            }
+        });
+    };
+
+    // Show support ticket (placeholder - would show ticket details)
+    window.showSupportTicket = function(requestId) {
+        alert('{{ __("Support ticket details would be displayed here") }}');
+        // In a full implementation, this would fetch and display ticket details
     };
 });
 </script>

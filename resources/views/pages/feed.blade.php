@@ -1767,15 +1767,38 @@ function incrementVideoViews(videoId) {
         }
         
         .video-info {
-            flex: 1;
+            flex: 0 0 auto;
             max-width: calc(100% - 90px);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        
+        .video-actions {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
         }
         
         .user-info {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             margin-bottom: 15px;
             gap: 12px;
+            width: 100%;
+        }
+        
+        .user-details {
+            text-align: left;
+        }
+        
+        .user-details h4,
+        .user-details p {
+            text-align: left;
         }
         
         /* Make user info clickable */
@@ -2199,24 +2222,62 @@ function incrementVideoViews(videoId) {
             
             .video-overlay {
                 padding: 15px;
+                justify-content: space-between !important;
+                align-items: flex-end !important;
             }
             
             .video-info {
                 max-width: calc(100% - 75px);
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex: 0 0 auto;
+            }
+            
+            .video-actions {
+                flex: 0 0 auto;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+            }
+            
+            .user-info {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                width: auto !important;
+                margin-left: 0 !important;
+                margin-right: auto !important;
+                margin-bottom: 15px;
             }
             
             .user-avatar-initials {
                 width: 40px;
                 height: 40px;
                 font-size: 14px;
+                margin-right: 0 !important;
+            }
+            
+            .user-details {
+                text-align: left !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             
             .user-details h4 {
                 font-size: 14px;
+                text-align: left !important;
+                margin: 0 0 4px 0 !important;
             }
             
             .user-details p {
                 font-size: 13px;
+                text-align: left !important;
+                margin: 0 !important;
             }
             
             .video-title {
@@ -2309,10 +2370,46 @@ function incrementVideoViews(videoId) {
                 font-size: 10px;
             }
             
+            .video-overlay {
+                justify-content: space-between !important;
+                align-items: flex-end !important;
+            }
+            
+            .video-info {
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex: 0 0 auto;
+            }
+            
+            .video-actions {
+                flex: 0 0 auto;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+            }
+            
+            .user-info {
+                justify-content: flex-start !important;
+                margin-left: 0 !important;
+                margin-right: auto !important;
+            }
+            
             .user-avatar-initials {
                 width: 32px;
                 height: 32px;
                 font-size: 12px;
+            }
+            
+            .user-details {
+                text-align: left !important;
+            }
+            
+            .user-details h4,
+            .user-details p {
+                text-align: left !important;
             }
             
             .sound-control-btn {

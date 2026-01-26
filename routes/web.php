@@ -1012,7 +1012,12 @@ Route::middleware(['web'])->group(function () {
     
     Route::middleware(['auth'])->group(function () {
         Route::post('/custom-requests', [App\Http\Controllers\CustomRequestController::class, 'store'])->name('custom-requests.store');
+        Route::post('/custom-requests/{id}/payment', [App\Http\Controllers\CustomRequestController::class, 'processPayment'])->name('custom-requests.payment');
         Route::post('/custom-requests/{id}/contribute', [App\Http\Controllers\CustomRequestController::class, 'contribute'])->name('custom-requests.contribute');
+        Route::post('/custom-requests/{id}/vote', [App\Http\Controllers\CustomRequestController::class, 'vote'])->name('custom-requests.vote');
+        Route::post('/custom-requests/{id}/release-funds', [App\Http\Controllers\CustomRequestController::class, 'releaseFunds'])->name('custom-requests.release-funds');
+        Route::get('/custom-requests/{id}/voting-stats', [App\Http\Controllers\CustomRequestController::class, 'getVotingStats'])->name('custom-requests.voting-stats');
+        Route::post('/custom-requests/{id}/support-ticket', [App\Http\Controllers\CustomRequestController::class, 'createSupportTicket'])->name('custom-requests.support-ticket');
         Route::post('/custom-requests/{id}/accept', [App\Http\Controllers\CustomRequestController::class, 'accept'])->name('custom-requests.accept');
         Route::post('/custom-requests/{id}/reject', [App\Http\Controllers\CustomRequestController::class, 'reject'])->name('custom-requests.reject');
         Route::post('/custom-requests/{id}/complete', [App\Http\Controllers\CustomRequestController::class, 'complete'])->name('custom-requests.complete');

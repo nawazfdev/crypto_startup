@@ -1,20 +1,17 @@
 <div class="conversation-header d-none">
-    <div class="details-holder border-bottom">
-        <div class="d-flex px-1">
-            <div class="col-10 pl-0 d-flex">
-                <div class="">
-                    <img class="conversation-header-avatar" src="{{asset('/img/no-avatar.png')}}" />
-                </div>
-                <div class="mt-2 ml-3 conversation-header-user text-truncate">
-
+    <div class="details-holder">
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center flex-grow-1 min-w-0">
+                <img class="conversation-header-avatar" src="{{asset('/img/no-avatar.png')}}" alt="Avatar" />
+                <div class="conversation-header-user text-truncate ml-2 ml-md-3">
                 </div>
             </div>
-            <div class="col-2 pt-2 pr-0 d-flex justify-content-end">
+            <div class="d-flex align-items-center flex-shrink-0">
                 <div class="dropdown {{GenericHelper::getSiteDirection() == 'rtl' ? 'dropright' : 'dropleft'}}">
-                    <a class="btn btn-sm btn-outline-primary dropdown-toggle px-2 py-1" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                    <a class="btn btn-sm btn-outline-primary dropdown-toggle px-2 py-1 d-flex align-items-center justify-content-center" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="width: 36px; height: 36px;">
                         @include('elements.icon',['icon'=>'ellipsis-horizontal-outline'])
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu dropdown-menu-right">
                         <!-- Dropdown menu links -->
                         <a class="dropdown-item d-flex align-items-center tip-btn"
                            data-toggle="modal"

@@ -36,6 +36,26 @@
             </div>
         </a>
         
+        <!-- Live Streams button -->
+        @if(getSetting('streams.allow_streams'))
+        <a href="{{ route('streams.index') }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{Route::currentRouteName() == 'streams.index' ? 'active' : ''}}">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                    @include('elements.icon',['icon'=>'play-circle-outline','variant'=>'large'])
+                </div>
+            </div>
+        </a>
+        @endif
+        
+        <!-- Custom Requests button -->
+        <a href="{{ route('custom-requests.marketplace') }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{Route::currentRouteName() == 'custom-requests.marketplace' || Route::currentRouteName() == 'custom-requests.my-requests' || Route::currentRouteName() == 'custom-requests.show' ? 'active' : ''}}">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                    @include('elements.icon',['icon'=>'gift-outline','variant'=>'large'])
+                </div>
+            </div>
+        </a>
+        
         @if(Auth::check())
             <a href="{{route('my.notifications')}}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{Route::currentRouteName() == 'my.notifications' ? 'active' : ''}}">
                 <div class="d-flex justify-content-center align-items-center">

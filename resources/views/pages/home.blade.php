@@ -932,11 +932,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 1003;
+            z-index: 10005 !important; /* Higher than bottom nav (usually z-index: 3) */
             background: rgba(0, 0, 0, 0.7);
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
         
         .header-modal.active {
@@ -944,17 +945,28 @@
             visibility: visible;
         }
         
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        
         .header-modal-content {
             background: #fff;
             border-radius: 20px 20px 0 0;
             padding: 0;
             width: 100%;
-            max-height: 70vh;
+            max-height: 85vh;
             overflow-y: auto;
+            overflow-x: hidden;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: absolute;
             bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 10006 !important;
         }
         
         .header-modal.active .header-modal-content {
@@ -971,6 +983,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            flex-shrink: 0;
         }
         
         .header-modal-header::before {
@@ -1018,34 +1031,61 @@
         .header-menu-items {
             padding: 20px;
             background: #fff;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 120px; /* Extra padding to ensure all items are visible above bottom nav */
+            min-height: 0;
         }
         
         .header-menu-item {
-            display: flex;
-            align-items: center;
+            display: flex !important;
+            align-items: center !important;
             gap: 15px;
             padding: 16px 20px;
             text-decoration: none;
-            color: #333;
+            color: #1a1a1a !important;
             border-radius: 12px;
             transition: all 0.3s ease;
             margin-bottom: 12px;
             font-size: 16px;
-            font-weight: 500;
-            border: 1px solid #f0f0f0;
+            font-weight: 600;
+            background: #ffffff !important;
+            border: 2px solid #e9ecef !important;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            min-height: 56px;
         }
         
-        .header-menu-item:hover {
-            background: linear-gradient(135deg, #ff6b6b, #ff8a80);
-            color: #fff;
+        .header-menu-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .header-menu-item:hover,
+        .header-menu-item:active,
+        .header-menu-item:focus {
+            background: linear-gradient(135deg, #667eea, #764ba2) !important;
+            color: #ffffff !important;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            border-color: transparent !important;
+            text-decoration: none;
         }
         
         .header-menu-item i {
             font-size: 20px;
             width: 24px;
             text-align: center;
+            flex-shrink: 0;
+            color: inherit;
+        }
+        
+        .header-menu-item span {
+            flex: 1;
+            font-weight: 500;
+            color: inherit;
         }
         
         /* TikTok-Style Full Screen Search */
@@ -1490,6 +1530,52 @@
             .bottom-nav-text {
                 font-size: 9px;
             }
+            
+            /* Mobile Menu Modal Fixes */
+            .header-modal {
+                z-index: 1005 !important;
+            }
+            
+            .header-modal {
+                z-index: 10005 !important;
+            }
+            
+            .header-modal-content {
+                max-height: 90vh !important;
+                bottom: 0 !important;
+                z-index: 10006 !important;
+            }
+            
+            .header-menu-items {
+                padding-bottom: 150px !important; /* Extra padding for bottom nav */
+                max-height: calc(90vh - 80px);
+            }
+            
+            .header-menu-item {
+                background: #ffffff !important;
+                border: 2px solid #e9ecef !important;
+                color: #1a1a1a !important;
+                font-weight: 600;
+                min-height: 56px;
+                display: flex !important;
+                align-items: center !important;
+            }
+            
+            .header-menu-item:hover,
+            .header-menu-item:active,
+            .header-menu-item:focus {
+                background: linear-gradient(135deg, #667eea, #764ba2) !important;
+                color: #ffffff !important;
+                border-color: transparent !important;
+            }
+            
+            .header-menu-item i {
+                color: inherit;
+            }
+            
+            .header-menu-item span {
+                display: block !important;
+            }
         }
     </style>
 @stop
@@ -1521,6 +1607,20 @@
                 <a href="/" class="header-menu-item">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
+                </a>
+                <a href="{{ route('videos.reels') }}" class="header-menu-item">
+                    <i class="fas fa-film"></i>
+                    <span>Search/Explore</span>
+                </a>
+                @if(getSetting('streams.allow_streams'))
+                <a href="{{ route('streams.index') }}" class="header-menu-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live Streams</span>
+                </a>
+                @endif
+                <a href="{{ route('custom-requests.marketplace') }}" class="header-menu-item">
+                    <i class="fas fa-gift"></i>
+                    <span>Custom Requests</span>
                 </a>
                 @auth
                     <a href="/{{ Auth::user()->username ?? 'profile' }}" class="header-menu-item">
@@ -2359,13 +2459,19 @@
             if (headerMenuBtn && headerModal) {
                 headerMenuBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    e.preventDefault();
                     headerModal.classList.add('active');
+                    document.body.classList.add('modal-open');
+                    // Prevent body scroll
+                    document.body.style.overflow = 'hidden';
                 });
             }
             
             if (headerModalClose) {
                 headerModalClose.addEventListener('click', function() {
                     headerModal.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
                 });
             }
             
@@ -2374,9 +2480,20 @@
                 headerModal.addEventListener('click', function(e) {
                     if (e.target === headerModal) {
                         headerModal.classList.remove('active');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
                     }
                 });
             }
+            
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && headerModal && headerModal.classList.contains('active')) {
+                    headerModal.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
+            });
             
             // TikTok-Style Search Modal
             const searchBtn = document.getElementById('search-btn');

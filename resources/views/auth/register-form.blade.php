@@ -147,29 +147,58 @@
             id="country_id" 
             name="country_id" 
             required
-            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box; appearance: none;"
+            style="width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box; appearance: none; cursor: pointer;"
             onfocus="this.style.outline='none'; this.style.borderColor='#830866'; this.style.boxShadow='0 0 0 3px rgba(131, 8, 102, 0.1)';"
             onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.boxShadow='none';"
         >
-            <option value="" style="background: #1a1a1a;">{{ __('Select your country') }}</option>
+            <option value="" style="background: #2d2d2d; color: #ffffff;">{{ __('Select your country') }}</option>
             @php
                 try {
-                    $countries = \App\Model\Country::where('name', '!=', 'All')->orderBy('name')->get();
-                    if ($countries->isEmpty()) {
-                        // If no countries, seed them
+                    // Get United States first
+                    $unitedStates = \App\Model\Country::where('name', 'United States of America (the)')->first();
+                    
+                    // Get all other countries (excluding "All" and United States)
+                    $otherCountries = \App\Model\Country::where('name', '!=', 'All')
+                        ->where('name', '!=', 'United States of America (the)')
+                        ->orderBy('name')
+                        ->get();
+                    
+                    // If countries don't exist, seed them
+                    if ($otherCountries->isEmpty() && !$unitedStates) {
                         \Artisan::call('db:seed', ['--class' => 'InsertCountries']);
-                        $countries = \App\Model\Country::where('name', '!=', 'All')->orderBy('name')->get();
+                        $unitedStates = \App\Model\Country::where('name', 'United States of America (the)')->first();
+                        $otherCountries = \App\Model\Country::where('name', '!=', 'All')
+                            ->where('name', '!=', 'United States of America (the)')
+                            ->orderBy('name')
+                            ->get();
                     }
+                    
+                    // Combine: United States first, then others
+                    $countries = collect([]);
+                    if ($unitedStates) {
+                        $countries->push($unitedStates);
+                    }
+                    $countries = $countries->merge($otherCountries);
+                    
+                    // Set default country ID for United States
+                    $defaultCountryId = $unitedStates ? $unitedStates->id : null;
                 } catch (\Exception $e) {
                     $countries = collect([]);
+                    $defaultCountryId = null;
                 }
             @endphp
             @if($countries->isNotEmpty())
                 @foreach($countries as $country)
-                    <option value="{{ $country->id }}" style="background: #1a1a1a;" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                    <option 
+                        value="{{ $country->id }}" 
+                        style="background: #2d2d2d; color: #ffffff; padding: 8px;" 
+                        {{ (old('country_id') ? old('country_id') == $country->id : ($defaultCountryId && $country->id == $defaultCountryId)) ? 'selected' : '' }}
+                    >
+                        {{ $country->name }}
+                    </option>
                 @endforeach
             @else
-                <option value="" style="background: #1a1a1a;">{{ __('Countries loading...') }}</option>
+                <option value="" style="background: #2d2d2d; color: #ffffff;">{{ __('Countries loading...') }}</option>
             @endif
         </select>
         @error('country_id')

@@ -1,70 +1,71 @@
 @extends('layouts.generic')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/pages/wallet.css') }}">
+@endsection
+
 @section('content')
-<div class="container py-4">
-    <div class="row mb-4">
+<div class="wallet-container">
+    <div class="row mb-3 wallet-header">
         <div class="col-12">
-            <h1 class="display-4">My Wallet</h1>
+            <h1>My Wallet</h1>
             <p class="lead">Manage your cryptocurrency tokens and transactions</p>
         </div>
     </div>
     
     <!-- Wallet Balance -->
     <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Total Balance</h5>
+        <div class="col-12 col-md-6 mb-3 mb-md-0">
+            <div class="wallet-card">
+                <div class="wallet-card-header bg-primary">
+                    <h5>Total Balance</h5>
                 </div>
-                <div class="card-body">
-                    <h2 class="mb-3">${{ number_format($totalBalance, 2) }}</h2>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Available for trading:</span>
+                <div class="wallet-card-body">
+                    <div class="balance-display">
+                        <h2>${{ number_format($totalBalance, 2) }}</h2>
+                    </div>
+                    <div class="balance-item">
+                        <span>Available for trading</span>
                         <span>${{ number_format($availableBalance, 2) }}</span>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Pending transactions:</span>
+                    <div class="balance-item">
+                        <span>Pending transactions</span>
                         <span>${{ number_format($pendingBalance, 2) }}</span>
                     </div>
-                    <hr>
-                    <div class="d-flex mt-3">
-                        <a href="{{ route('cryptocurrency.deposit') }}" class="btn btn-success flex-grow-1 mr-2">DEPOSIT</a>
-                        <a href="{{ route('cryptocurrency.withdraw') }}" class="btn btn-outline-primary flex-grow-1">WITHDRAW</a>
+                    <div class="wallet-actions">
+                        <a href="{{ route('cryptocurrency.deposit') }}" class="wallet-btn wallet-btn-success">
+                            <i class="fas fa-arrow-down"></i> Deposit
+                        </a>
+                        <a href="{{ route('cryptocurrency.withdraw') }}" class="wallet-btn wallet-btn-outline">
+                            <i class="fas fa-arrow-up"></i> Withdraw
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Quick Actions</h5>
+        <div class="col-12 col-md-6">
+            <div class="wallet-card">
+                <div class="wallet-card-header bg-info">
+                    <h5>Quick Actions</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <a href="{{ route('cryptocurrency.marketplace') }}" class="btn btn-light btn-block py-3 action-button">
-                                <i class="fas fa-store mb-2 d-block" style="font-size: 24px;"></i>
-                                MARKETPLACE
-                            </a>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <a href="{{ route('cryptocurrency.explorer') }}" class="btn btn-light btn-block py-3 action-button">
-                                <i class="fas fa-search mb-2 d-block" style="font-size: 24px;"></i>
-                                EXPLORE
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a href="{{ route('cryptocurrency.create') }}" class="btn btn-light btn-block py-3 action-button">
-                                <i class="fas fa-plus-circle mb-2 d-block" style="font-size: 24px;"></i>
-                                CREATE TOKEN
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a href="#transaction-history" class="btn btn-light btn-block py-3 action-button">
-                                <i class="fas fa-history mb-2 d-block" style="font-size: 24px;"></i>
-                                HISTORY
-                            </a>
-                        </div>
+                <div class="wallet-card-body">
+                    <div class="quick-actions-grid">
+                        <a href="{{ route('cryptocurrency.marketplace') }}" class="action-button">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                        <a href="{{ route('cryptocurrency.explorer') }}" class="action-button">
+                            <i class="fas fa-search"></i>
+                            <span>Explore</span>
+                        </a>
+                        <a href="{{ route('cryptocurrency.create') }}" class="action-button">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Token</span>
+                        </a>
+                        <a href="#transaction-history" class="action-button">
+                            <i class="fas fa-history"></i>
+                            <span>History</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -74,72 +75,138 @@
     <!-- My Tokens -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">My Tokens</h5>
+            <div class="wallet-card">
+                <div class="wallet-card-header">
+                    <h5>My Tokens</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Token</th>
-                                    <th>Balance</th>
-                                    <th>Value</th>
-                                    <th>Price</th>
-                                    <th>24h Change</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($wallets as $wallet)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            @if($wallet->cryptocurrency->logo)
-                                                <img src="{{ asset('storage/' . $wallet->cryptocurrency->logo) }}" alt="{{ $wallet->cryptocurrency->name }}" class="rounded-circle mr-2" width="32" height="32">
-                                            @else
-                                                <div class="rounded-circle bg-primary text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                    <span>{{ substr($wallet->cryptocurrency->symbol, 0, 1) }}</span>
+                <div class="wallet-card-body p-0">
+                    @forelse($wallets as $wallet)
+                        <!-- Desktop Table View -->
+                        <div class="tokens-table-wrapper d-none d-md-block">
+                            <table class="tokens-table">
+                                <thead>
+                                    <tr>
+                                        <th>Token</th>
+                                        <th>Balance</th>
+                                        <th>Value</th>
+                                        <th>Price</th>
+                                        <th>24h Change</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($wallets as $wallet)
+                                    <tr>
+                                        <td>
+                                            <div class="token-cell">
+                                                @if($wallet->cryptocurrency->logo)
+                                                    <img src="{{ asset('storage/' . $wallet->cryptocurrency->logo) }}" alt="{{ $wallet->cryptocurrency->name }}" class="token-logo">
+                                                @else
+                                                    <div class="token-symbol-circle">
+                                                        {{ substr($wallet->cryptocurrency->symbol, 0, 1) }}
+                                                    </div>
+                                                @endif
+                                                <div class="token-info">
+                                                    <div class="token-name">{{ $wallet->cryptocurrency->name }}</div>
+                                                    <div class="token-symbol">{{ $wallet->cryptocurrency->symbol }}</div>
                                                 </div>
-                                            @endif
-                                            <div>
-                                                <div>{{ $wallet->cryptocurrency->name }}</div>
-                                                <small class="text-muted">{{ $wallet->cryptocurrency->symbol }}</small>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ number_format($wallet->balance) }}</td>
-                                    <td>${{ number_format($wallet->balance * $wallet->cryptocurrency->current_price, 2) }}</td>
-                                    <td>${{ number_format($wallet->cryptocurrency->current_price, 8) }}</td>
-                                    <td>
-                                        @if($wallet->cryptocurrency->price_change_24h > 0)
-                                            <span class="text-success">+{{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%</span>
-                                        @elseif($wallet->cryptocurrency->price_change_24h < 0)
-                                            <span class="text-danger">{{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%</span>
+                                        </td>
+                                        <td><strong>{{ number_format($wallet->balance) }}</strong></td>
+                                        <td><strong>${{ number_format($wallet->balance * $wallet->cryptocurrency->current_price, 2) }}</strong></td>
+                                        <td>${{ number_format($wallet->cryptocurrency->current_price, 8) }}</td>
+                                        <td>
+                                            @if($wallet->cryptocurrency->price_change_24h > 0)
+                                                <span class="price-change positive">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                    +{{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%
+                                                </span>
+                                            @elseif($wallet->cryptocurrency->price_change_24h < 0)
+                                                <span class="price-change negative">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                    {{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%
+                                                </span>
+                                            @else
+                                                <span class="price-change neutral">0.00%</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="token-actions">
+                                                <a href="{{ route('cryptocurrency.show', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                                                <a href="{{ route('cryptocurrency.buy.form', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-primary">Buy</a>
+                                                <a href="{{ route('cryptocurrency.sell', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-secondary">Sell</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile Card View -->
+                        <div class="tokens-mobile-list d-md-none px-3 py-2">
+                            @foreach($wallets as $wallet)
+                            <div class="token-mobile-card">
+                                <div class="token-mobile-header">
+                                    <div class="token-cell">
+                                        @if($wallet->cryptocurrency->logo)
+                                            <img src="{{ asset('storage/' . $wallet->cryptocurrency->logo) }}" alt="{{ $wallet->cryptocurrency->name }}" class="token-logo">
                                         @else
-                                            <span>0.00%</span>
+                                            <div class="token-symbol-circle">
+                                                {{ substr($wallet->cryptocurrency->symbol, 0, 1) }}
+                                            </div>
                                         @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('cryptocurrency.show', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-primary">Details</a>
-                                            <a href="{{ route('cryptocurrency.buy.form', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-primary">Buy</a>
-                                            <a href="{{ route('cryptocurrency.sell', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-secondary">Sell</a>
+                                        <div class="token-info">
+                                            <div class="token-name">{{ $wallet->cryptocurrency->name }}</div>
+                                            <div class="token-symbol">{{ $wallet->cryptocurrency->symbol }}</div>
                                         </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        <p class="mb-2">You don't own any tokens yet.</p>
-                                        <a href="{{ route('cryptocurrency.marketplace') }}" class="btn btn-primary">Browse Marketplace</a>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
+                                    @if($wallet->cryptocurrency->price_change_24h > 0)
+                                        <span class="price-change positive">
+                                            <i class="fas fa-arrow-up"></i>
+                                            +{{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%
+                                        </span>
+                                    @elseif($wallet->cryptocurrency->price_change_24h < 0)
+                                        <span class="price-change negative">
+                                            <i class="fas fa-arrow-down"></i>
+                                            {{ number_format($wallet->cryptocurrency->price_change_24h, 2) }}%
+                                        </span>
+                                    @else
+                                        <span class="price-change neutral">0.00%</span>
+                                    @endif
+                                </div>
+                                <div class="token-mobile-info">
+                                    <div class="token-mobile-info-item">
+                                        <div class="token-mobile-info-label">Balance</div>
+                                        <div class="token-mobile-info-value">{{ number_format($wallet->balance) }}</div>
+                                    </div>
+                                    <div class="token-mobile-info-item">
+                                        <div class="token-mobile-info-label">Value</div>
+                                        <div class="token-mobile-info-value">${{ number_format($wallet->balance * $wallet->cryptocurrency->current_price, 2) }}</div>
+                                    </div>
+                                    <div class="token-mobile-info-item">
+                                        <div class="token-mobile-info-label">Price</div>
+                                        <div class="token-mobile-info-value">${{ number_format($wallet->cryptocurrency->current_price, 8) }}</div>
+                                    </div>
+                                </div>
+                                <div class="token-mobile-actions">
+                                    <a href="{{ route('cryptocurrency.show', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                                    <a href="{{ route('cryptocurrency.buy.form', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-primary">Buy</a>
+                                    <a href="{{ route('cryptocurrency.sell', $wallet->cryptocurrency->id) }}" class="btn btn-sm btn-outline-secondary">Sell</a>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @empty
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <h4>You don't own any tokens yet</h4>
+                            <p>Start by buying tokens from content creators you support</p>
+                            <a href="{{ route('cryptocurrency.marketplace') }}" class="btn btn-primary">Browse Marketplace</a>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -148,97 +215,141 @@
     <!-- Transaction History -->
     <div class="row" id="transaction-history">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Transaction History</h5>
-                    <div class="btn-group">
-                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'all']) }}" class="btn btn-sm btn-outline-secondary active">All</a>
-                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'buy']) }}" class="btn btn-sm btn-outline-secondary">Buy</a>
-                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'sell']) }}" class="btn btn-sm btn-outline-secondary">Sell</a>
-                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'transfer']) }}" class="btn btn-sm btn-outline-secondary">Transfer</a>
+            <div class="wallet-card">
+                <div class="wallet-card-header" style="flex-wrap: wrap; gap: 12px;">
+                    <h5>Transaction History</h5>
+                    <div class="filter-buttons d-none d-md-flex">
+                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'all']) }}" class="filter-btn {{ request('type', 'all') == 'all' ? 'active' : '' }}">All</a>
+                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'buy']) }}" class="filter-btn {{ request('type') == 'buy' ? 'active' : '' }}">Buy</a>
+                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'sell']) }}" class="filter-btn {{ request('type') == 'sell' ? 'active' : '' }}">Sell</a>
+                        <a href="{{ route('cryptocurrency.transactions', ['type' => 'transfer']) }}" class="filter-btn {{ request('type') == 'transfer' ? 'active' : '' }}">Transfer</a>
                     </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Type</th>
-                                    <th>Token</th>
-                                    <th>Amount</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($transactions as $transaction)
-                                <tr>
-                                    <td>{{ $transaction->created_at->format('M d, Y H:i') }}</td>
-                                    <td>
-                                        @if($transaction->type == 'buy')
-                                            <span class="badge badge-success">Buy</span>
-                                        @elseif($transaction->type == 'sell')
-                                            <span class="badge badge-danger">Sell</span>
-                                        @elseif($transaction->type == 'transfer')
-                                            <span class="badge badge-info">Transfer</span>
-                                        @else
-                                            <span class="badge badge-secondary">{{ ucfirst($transaction->type) }}</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $transaction->cryptocurrency->symbol }}</td>
-                                    <td>{{ number_format($transaction->amount) }}</td>
-                                    <td>${{ number_format($transaction->price_per_token, 8) }}</td>
-                                    <td>${{ number_format($transaction->total_amount, 2) }}</td>
-                                    <td>
-                                        @if($transaction->status == 'completed')
-                                            <span class="badge badge-success">Completed</span>
-                                        @elseif($transaction->status == 'pending')
-                                            <span class="badge badge-warning">Pending</span>
-                                        @elseif($transaction->status == 'failed')
-                                            <span class="badge badge-danger">Failed</span>
-                                        @else
-                                            <span class="badge badge-secondary">{{ ucfirst($transaction->status) }}</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">No transactions found</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="filter-buttons d-md-none px-3 py-2" style="background: var(--wallet-bg-secondary); border-bottom: 1px solid var(--wallet-border);">
+                    <a href="{{ route('cryptocurrency.transactions', ['type' => 'all']) }}" class="filter-btn {{ request('type', 'all') == 'all' ? 'active' : '' }}">All</a>
+                    <a href="{{ route('cryptocurrency.transactions', ['type' => 'buy']) }}" class="filter-btn {{ request('type') == 'buy' ? 'active' : '' }}">Buy</a>
+                    <a href="{{ route('cryptocurrency.transactions', ['type' => 'sell']) }}" class="filter-btn {{ request('type') == 'sell' ? 'active' : '' }}">Sell</a>
+                    <a href="{{ route('cryptocurrency.transactions', ['type' => 'transfer']) }}" class="filter-btn {{ request('type') == 'transfer' ? 'active' : '' }}">Transfer</a>
                 </div>
-                <div class="card-footer">
+                <div class="wallet-card-body p-0">
+                    @forelse($transactions as $transaction)
+                        <!-- Desktop Table View -->
+                        <div class="tokens-table-wrapper d-none d-md-block">
+                            <table class="tokens-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Token</th>
+                                        <th>Amount</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($transactions as $txn)
+                                    <tr>
+                                        <td>{{ $txn->created_at->format('M d, Y H:i') }}</td>
+                                        <td>
+                                            @if($txn->type == 'buy')
+                                                <span class="transaction-badge buy">Buy</span>
+                                            @elseif($txn->type == 'sell')
+                                                <span class="transaction-badge sell">Sell</span>
+                                            @elseif($txn->type == 'transfer')
+                                                <span class="transaction-badge transfer">Transfer</span>
+                                            @else
+                                                <span class="transaction-badge">{{ ucfirst($txn->type) }}</span>
+                                            @endif
+                                        </td>
+                                        <td><strong>{{ $txn->cryptocurrency->symbol }}</strong></td>
+                                        <td>{{ number_format($txn->amount) }}</td>
+                                        <td>${{ number_format($txn->price_per_token, 8) }}</td>
+                                        <td><strong>${{ number_format($txn->total_amount, 2) }}</strong></td>
+                                        <td>
+                                            @if($txn->status == 'completed')
+                                                <span class="status-badge completed">Completed</span>
+                                            @elseif($txn->status == 'pending')
+                                                <span class="status-badge pending">Pending</span>
+                                            @elseif($txn->status == 'failed')
+                                                <span class="status-badge failed">Failed</span>
+                                            @else
+                                                <span class="status-badge">{{ ucfirst($txn->status) }}</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile Card View -->
+                        <div class="d-md-none px-3 py-2">
+                            @foreach($transactions as $txn)
+                            <div class="transaction-mobile-card">
+                                <div class="transaction-mobile-header">
+                                    <div>
+                                        @if($txn->type == 'buy')
+                                            <span class="transaction-badge buy">Buy</span>
+                                        @elseif($txn->type == 'sell')
+                                            <span class="transaction-badge sell">Sell</span>
+                                        @elseif($txn->type == 'transfer')
+                                            <span class="transaction-badge transfer">Transfer</span>
+                                        @else
+                                            <span class="transaction-badge">{{ ucfirst($txn->type) }}</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        @if($txn->status == 'completed')
+                                            <span class="status-badge completed">Completed</span>
+                                        @elseif($txn->status == 'pending')
+                                            <span class="status-badge pending">Pending</span>
+                                        @elseif($txn->status == 'failed')
+                                            <span class="status-badge failed">Failed</span>
+                                        @else
+                                            <span class="status-badge">{{ ucfirst($txn->status) }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <dl class="transaction-mobile-details">
+                                    <dt>Date</dt>
+                                    <dd>{{ $txn->created_at->format('M d, Y') }}<br><small>{{ $txn->created_at->format('H:i') }}</small></dd>
+                                    
+                                    <dt>Token</dt>
+                                    <dd><strong>{{ $txn->cryptocurrency->symbol }}</strong></dd>
+                                    
+                                    <dt>Amount</dt>
+                                    <dd>{{ number_format($txn->amount) }}</dd>
+                                    
+                                    <dt>Price</dt>
+                                    <dd>${{ number_format($txn->price_per_token, 6) }}</dd>
+                                    
+                                    <dt>Total</dt>
+                                    <dd><strong>${{ number_format($txn->total_amount, 2) }}</strong></dd>
+                                </dl>
+                            </div>
+                            @endforeach
+                        </div>
+                    @empty
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <h4>No transactions found</h4>
+                            <p>Your transaction history will appear here</p>
+                        </div>
+                    @endforelse
+                </div>
+                @if(isset($transactions) && $transactions->hasPages())
+                <div class="wallet-card-body border-top">
                     <div class="d-flex justify-content-center">
                         {{ $transactions->links() }}
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
-@push('styles')
-<style>
-    .action-button {
-        transition: all 0.3s ease;
-        border: 1px solid #e9ecef;
-        font-weight: 500;
-    }
-    
-    .action-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        background-color: #f8f9fa;
-    }
-    
-    .btn-group .btn {
-        min-width: 70px;
-    }
-</style>
-@endpush
 @endsection 

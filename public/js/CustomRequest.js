@@ -195,27 +195,53 @@ var CustomRequest = {
         })
         .then(data => {
             if (data.success) {
-                // Reset form
-                form.reset();
-                
-                // Clear creator selection indicator
-                const creatorIndicator = document.getElementById('creator_selected_indicator');
-                const creatorResults = document.getElementById('creator_search_results');
-                if (creatorIndicator) creatorIndicator.style.display = 'none';
-                if (creatorResults) creatorResults.style.display = 'none';
-                
-                // Hide modal immediately
-                CustomRequest.hideCreateModal();
-                
-                // Show success toast (no alert)
-                if (typeof launchToast !== 'undefined') {
-                    launchToast('success', 'Success', data.message || 'Custom request created successfully!');
+                // Check if payment is required
+                if (data.requires_payment && data.upfront_payment) {
+                    // Show payment modal or redirect to payment
+                    const proceedPayment = confirm(
+                        'Upfront payment of $' + parseFloat(data.upfront_payment).toFixed(2) + 
+                        ' is required to create this request. Proceed to payment?'
+                    );
+                    
+                    if (proceedPayment) {
+                        // Redirect to payment page
+                        if (data.payment_url) {
+                            window.location.href = data.payment_url;
+                        } else {
+                            // Fallback: redirect to request page where they can pay
+                            window.location.href = '/custom-requests/' + data.request.id;
+                        }
+                        return;
+                    } else {
+                        // User cancelled, just show message
+                        if (typeof launchToast !== 'undefined') {
+                            launchToast('info', 'Info', 'Request created but payment is required to proceed.');
+                        }
+                    }
+                } else {
+                    // No payment required or already paid
+                    // Reset form
+                    form.reset();
+                    
+                    // Clear creator selection indicator
+                    const creatorIndicator = document.getElementById('creator_selected_indicator');
+                    const creatorResults = document.getElementById('creator_search_results');
+                    if (creatorIndicator) creatorIndicator.style.display = 'none';
+                    if (creatorResults) creatorResults.style.display = 'none';
+                    
+                    // Hide modal immediately
+                    CustomRequest.hideCreateModal();
+                    
+                    // Show success toast
+                    if (typeof launchToast !== 'undefined') {
+                        launchToast('success', 'Success', data.message || 'Custom request created successfully!');
+                    }
+                    
+                    // Redirect after a short delay
+                    setTimeout(function() {
+                        window.location.href = '/custom-requests/my-requests';
+                    }, 500);
                 }
-                
-                // Redirect after a short delay
-                setTimeout(function() {
-                    window.location.href = '/custom-requests/my-requests';
-                }, 500);
             } else {
                 // Show error
                 const errorMsg = data.message || 'Failed to create request';
